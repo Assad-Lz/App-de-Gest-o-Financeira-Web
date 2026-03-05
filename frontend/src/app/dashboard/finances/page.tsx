@@ -1,31 +1,100 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import { useSession } from 'next-auth/react';
 
-const mockTransactions = [
-  { id: '1', type: 'INCOME', amount: 7200, category: 'Salário', description: 'Salário mensal', date: '2025-06-01' },
-  { id: '2', type: 'EXPENSE', amount: 1800, category: 'Moradia', description: 'Aluguel + Condomínio', date: '2025-06-05' },
-  { id: '3', type: 'EXPENSE', amount: 650, category: 'Alimentação', description: 'Supermercado + Restaurantes', date: '2025-06-08' },
-  { id: '4', type: 'INCOME', amount: 800, category: 'Freelance', description: 'Projeto web design', date: '2025-06-12' },
-  { id: '5', type: 'EXPENSE', amount: 320, category: 'Transporte', description: 'Combustível + Uber', date: '2025-06-14' },
-  { id: '6', type: 'EXPENSE', amount: 450, category: 'Lazer', description: 'Cinema + Academia + Viagem', date: '2025-06-18' },
-  { id: '7', type: 'INCOME', amount: 500, category: 'Investimentos', description: 'Dividendos FIIs', date: '2025-06-20' },
-  { id: '8', type: 'EXPENSE', amount: 210, category: 'Saúde', description: 'Plano de saúde + Remédios', date: '2025-06-22' },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+type Transaction = {
+  id: string;
+  type: 'INCOME' | 'EXPENSE';
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+};
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 
 export default function FinancesPage() {
+  const { data: session } = useSession();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('ALL');
   const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ type: 'EXPENSE', amount: '', category: '', description: '' });
 
-  const filtered = filter === 'ALL' ? mockTransactions : mockTransactions.filter(t => t.type === filter);
+  const fetchTransactions = async () => {
+    if (!session?.user) return;
+    try {
+      const userId = (session.user as any).email; // No nosso backend, por enquanto identificamos pelo email ou uuid.
+      // Ajuste: O CreateUserController retorna o 'id' real do banco.
+      // Idealmente pegaríamos o 'id' da sessão.
+      const response = await axios.get(`${API_URL}/transactions/${userId}`);
+      setTransactions(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar transações:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const totalIncome = mockTransactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
-  const totalExpense = mockTransactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
+  useEffect(() => {
+    fetchTransactions();
+  }, [session]);
+
+  const handleSaveTransaction = async () => {
+    if (!session?.user || !form.amount || !form.category) return;
+    
+    setIsSubmitting(true);
+    try {
+      await axios.post(`${API_URL}/transactions`, {
+        userId: (session.user as any).email, // Backend busca o ID pelo email se necessário, ou passamos o email para o usecase findByEmail
+        type: form.type,
+        amount: parseFloat(form.amount),
+        category: form.category,
+        description: form.description || undefined
+      });
+      
+      setForm({ type: 'EXPENSE', amount: '', category: '', description: '' });
+      setShowForm(false);
+      fetchTransactions();
+    } catch (error) {
+      console.error('Erro ao salvar transação:', error);
+      alert('Erro ao salvar. Verifique se o backend está rodando.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if(!confirm('Tem certeza que deseja excluir esta transação?')) return;
+    
+    try {
+      await axios.delete(`${API_URL}/transactions/${id}`);
+      fetchTransactions();
+    } catch (error) {
+      console.error('Erro ao deletar transação:', error);
+    }
+  };
+
+  const filtered = filter === 'ALL' ? transactions : transactions.filter(t => t.type === filter);
+
+  const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
   const balance = totalIncome - totalExpense;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-400">
+        <Loader2 className="w-8 h-8 animate-spin mr-3" />
+        Carregando transações...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -91,7 +160,12 @@ export default function FinancesPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-medium hover:opacity-90 transition-opacity">
+            <button 
+              onClick={handleSaveTransaction}
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Salvar Transação
             </button>
             <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors">
@@ -104,7 +178,7 @@ export default function FinancesPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Saldo do Mês', value: balance, color: balance >= 0 ? 'emerald' : 'red', icon: balance >= 0 ? ArrowUpRight : ArrowDownRight },
+          { label: 'Saldo Total', value: balance, color: balance >= 0 ? 'emerald' : 'red', icon: balance >= 0 ? ArrowUpRight : ArrowDownRight },
           { label: 'Total Receitas', value: totalIncome, color: 'emerald', icon: ArrowUpRight },
           { label: 'Total Despesas', value: totalExpense, color: 'red', icon: ArrowDownRight },
         ].map((card, i) => (
@@ -133,32 +207,41 @@ export default function FinancesPage() {
 
       {/* Transactions List */}
       <div className="glass-panel rounded-2xl overflow-hidden">
-        <div className="divide-y divide-slate-800/60">
-          {filtered.map(tx => (
-            <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors group">
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'INCOME' ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
-                  {tx.type === 'INCOME'
-                    ? <ArrowUpRight className="w-5 h-5 text-emerald-400" />
-                    : <ArrowDownRight className="w-5 h-5 text-red-400" />
-                  }
+        {filtered.length === 0 ? (
+          <div className="p-8 text-center text-slate-500">
+            Nenhuma transação encontrada. Comece adicionando uma acima!
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-800/60">
+            {filtered.map(tx => (
+              <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'INCOME' ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
+                    {tx.type === 'INCOME'
+                      ? <ArrowUpRight className="w-5 h-5 text-emerald-400" />
+                      : <ArrowDownRight className="w-5 h-5 text-red-400" />
+                    }
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-200 text-sm">{tx.description || 'Sem descrição'}</p>
+                    <p className="text-xs text-slate-500">{tx.category} · {new Date(tx.date).toLocaleDateString('pt-BR')}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-slate-200 text-sm">{tx.description}</p>
-                  <p className="text-xs text-slate-500">{tx.category} · {new Date(tx.date).toLocaleDateString('pt-BR')}</p>
+                <div className="flex items-center gap-4">
+                  <p className={`font-bold text-sm ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {tx.type === 'INCOME' ? '+' : '-'} R$ {tx.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                  <button 
+                    onClick={() => handleDeleteTransaction(tx.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-red-400"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <p className={`font-bold text-sm ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {tx.type === 'INCOME' ? '+' : '-'} R$ {tx.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-                <button className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-red-400">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
