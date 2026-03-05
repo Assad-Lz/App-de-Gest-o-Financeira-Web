@@ -44,7 +44,7 @@ export class GeminiAiAssistantProvider implements IAiAssistantProvider {
       return "Configure a API Key do Gemini para dicas personalizadas.";
     }
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       const prompt = `${FINEASY_SYSTEM_PROMPT}\n\nCenário do usuário este mês:\n- Renda: R$ ${monthlyIncome}\n- Despesas: R$ ${monthlyExpenses}\n- Maior gasto: ${topCategory}\n\nForneça uma dica financeira personalizada e objetiva.`;
       const result = await model.generateContent(prompt);
       return result.response.text();
@@ -64,7 +64,7 @@ export class GeminiAiAssistantProvider implements IAiAssistantProvider {
       const systemInstruction = FINEASY_SYSTEM_PROMPT + (userName ? `\n\nO nome do usuário nesta conversa é: ${userName}` : '');
 
       const model = this.genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-flash-latest",
         systemInstruction,
       });
 
@@ -77,7 +77,7 @@ export class GeminiAiAssistantProvider implements IAiAssistantProvider {
       const chatSession = model.startChat({
         history: geminiHistory,
         generationConfig: {
-          maxOutputTokens: 500,
+          maxOutputTokens: 2048,
           temperature: 0.85,
         },
       });
