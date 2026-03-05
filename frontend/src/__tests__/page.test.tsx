@@ -11,10 +11,8 @@ jest.mock('next-auth/react', () => ({
   useSession: jest.fn(() => ({ data: null, status: 'unauthenticated' })),
 }));
 
-// Mock do Three.js por ser WebGL (não roda no JSDOM)
-jest.mock('@react-three/fiber', () => ({ Canvas: () => null }));
-jest.mock('@react-three/drei', () => ({ Stars: () => null }));
-jest.mock('../components/ui/Globe', () => ({ GlobeThree: () => null }));
+// Mock do NeuralMesh
+jest.mock('../components/ui/NeuralMesh', () => ({ NeuralMesh: () => null }));
 
 // Mock do gsap
 const mockGsapObj = {

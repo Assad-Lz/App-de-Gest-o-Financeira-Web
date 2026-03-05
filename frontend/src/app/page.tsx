@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Mail, ArrowRight, ShieldCheck, TrendingUp } from 'lucide-react';
 import { signIn } from 'next-auth/react';
-import { GlobeThree } from '../components/ui/Globe';
+import { NeuralMesh } from '../components/ui/NeuralMesh';
 import gsap from 'gsap';
 import Image from 'next/image';
 
@@ -47,8 +47,8 @@ export default function Home() {
   return (
     <div ref={containerRef} className="flex flex-col items-center justify-center min-h-screen w-full px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       
-      {/* Camada 3D do Background HighTech */}
-      <GlobeThree />
+      {/* Camada Visual de Redes Neurais (High-Tech Mesh) */}
+      <NeuralMesh />
 
       <div className="z-10 text-center mb-10 w-full max-w-2xl relative">
         <div className="hero-title flex flex-col items-center justify-center pointer-events-none">
