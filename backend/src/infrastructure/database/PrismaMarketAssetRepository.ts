@@ -18,4 +18,22 @@ export class PrismaMarketAssetRepository implements IMarketAssetRepository {
       changePerc: asset.changePerc || undefined,
     }, asset.id));
   }
+
+  async upsert(asset: any): Promise<void> {
+    await prisma.marketAsset.upsert({
+      where: { symbol: asset.symbol },
+      update: {
+        price: asset.price,
+        changePerc: asset.changePerc,
+        updatedAt: new Date(),
+      },
+      create: {
+        symbol: asset.symbol,
+        name: asset.name,
+        price: asset.price,
+        changePerc: asset.changePerc,
+        updatedAt: new Date(),
+      },
+    });
+  }
 }
