@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String?       // Pode ser null se logar com Google/Facebook
+  name         String
+  provider     String        @default("email") // "email", "google", "facebook"
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // "INCOME" | "EXPENSE"
+  amount      Float
+  category    String   // "Salário", "Alimentação", "Transporte", etc
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MarketAsset {
+  id         String   @id @default(uuid())
+  symbol     String   @unique
+  name       String
+  price      Float
+  changePerc Float?   // Variação % diária
+  updatedAt  DateTime @updatedAt
+}
+
+model EconomicIndicator {
+  id        String   @id @default(uuid())
+  name      String   @unique // "IPCA", "SELIC", "USD_BRL", "EUR_BRL"
+  value     Float
+  updatedAt DateTime @updatedAt
+}
