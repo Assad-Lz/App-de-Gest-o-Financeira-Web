@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Wallet, LineChart, MessageSquarePlus, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Wallet, LineChart, MessageSquarePlus, LogOut, Settings, Landmark } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -10,6 +10,7 @@ const sidebarItems = [
   { icon: LayoutDashboard, label: 'Painel Geral', href: '/dashboard' },
   { icon: Wallet, label: 'Despesas e Receitas', href: '/dashboard/finances' },
   { icon: LineChart, label: 'Mercado de Ações', href: '/dashboard/market' },
+  { icon: Landmark, label: 'Simulador de Investimentos', href: '/dashboard/investments' },
   { icon: MessageSquarePlus, label: 'Chat IA Consultoria', href: '/dashboard/ai' },
   { icon: Settings, label: 'Configurações', href: '/dashboard/settings' },
 ];

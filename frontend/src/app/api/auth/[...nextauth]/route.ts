@@ -1,6 +1,7 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { api } from "../../../lib/api";
+import axios from "axios";
+
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -13,7 +14,7 @@ export const authOptions: AuthOptions = {
     async signIn({ user, account, profile }) {
       try {
         // Envia requisição para registar ou criar usuário no Backend PostgreSQL (via Express Node.js)
-        await api.post('/users', { 
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/users`, { 
           name: user.name, 
           email: user.email, 
           provider: 'google' 
