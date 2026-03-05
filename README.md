@@ -12,18 +12,6 @@ O **FinEasy** é uma plataforma premium de gestão financeira pessoal que une o 
 
 ---
 
-## 📸 Demonstração
-
-### ✨ Landing Page Moderna
-A primeira impressão que encanta, com animações suaves e design focado em conversão.
-![Landing Page](/home/zacky/.gemini/antigravity/brain/bed18fba-1091-4161-baf9-26f0ee80b92d/landing_page_screenshot_actual_1772753883717.png)
-
-### 📊 Dashboard de Mercado
-Acompanhe Ibovespa, Dólar e mais de 50 ativos da B3 atualizados automaticamente.
-![Dashboard Mercado](/home/zacky/.gemini/antigravity/brain/bed18fba-1091-4161-baf9-26f0ee80b92d/frontend_market_populated_1772749996779.png)
-
----
-
 ## 🔥 Funcionalidades Principais
 
 - **📊 Monitor de Mercado Live**: Sincronização automática de preços via Brapi e AwesomeAPI.
@@ -92,5 +80,3 @@ npm run dev
 ## 📄 Licença
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
----
-**Desenvolvido com ❤️ por Yssaky & Antigravity AI** 🚀
