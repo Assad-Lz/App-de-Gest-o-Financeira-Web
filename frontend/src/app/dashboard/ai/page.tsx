@@ -37,25 +37,46 @@ export default function AIConsultantPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const userMessage: Message = { id: Date.now().toString(), role: 'user', content: input };
+    const userInput = input;
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true);
 
-    // Mock da Simulação da IA (Depois será integrado ao Node.js / Gemini API)
-    setTimeout(() => {
-      const aiResponse: Message = { 
-        id: (Date.now() + 1).toString(), 
-        role: 'ai', 
-        content: 'Excelente insight. Recomendo investirmos essa quantia extra em um ETF indexado (como BOVA11), pois no longo prazo, a taxa de retorno supera consideravelmente a inflação brasileira. Analisando as tendências do mercado e o momento macroeconômico, é a estratégia mais otimizada.' 
+    try {
+      // Chama o backend Node.js que aciona o Gemini 1.5 Flash
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${backendUrl}/ai/advice/demo`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      let aiText = 'Houve um problema ao consultar a IA. Tente novamente.';
+      if (response.ok) {
+        const data = await response.json();
+        aiText = data.advice || aiText;
+      }
+
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: aiText,
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: 'Não consegui me conectar ao servidor de IA no momento. Verifique se o backend está rodando em localhost:3001.',
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   return (
