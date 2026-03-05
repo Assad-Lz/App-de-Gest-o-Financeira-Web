@@ -10,7 +10,7 @@ export class MarketController {
 
   async getTopAssets(request: Request, response: Response): Promise<Response> {
     try {
-      const topAssets = await this.getTopMarketAssetsUseCase.execute(5);
+      const topAssets = await this.getTopMarketAssetsUseCase.execute();
       return response.status(200).json(topAssets);
     } catch (err: any) {
       return response.status(400).json({ message: err.message });

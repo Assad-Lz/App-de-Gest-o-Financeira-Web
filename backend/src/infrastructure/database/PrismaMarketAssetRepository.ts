@@ -5,7 +5,7 @@ import { IMarketAssetRepository } from '../../domain/contracts/IMarketAssetRepos
 const prisma = new PrismaClient();
 
 export class PrismaMarketAssetRepository implements IMarketAssetRepository {
-  async findTopAssets(limit: number = 10): Promise<MarketAsset[]> {
+  async findTopAssets(limit: number = 30): Promise<MarketAsset[]> {
     const assets = await prisma.marketAsset.findMany({
       orderBy: { changePerc: 'desc' },
       take: limit,
