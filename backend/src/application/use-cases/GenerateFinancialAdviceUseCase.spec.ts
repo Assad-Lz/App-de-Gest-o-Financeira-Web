@@ -12,6 +12,7 @@ const mockEmptyTransactionRepo: ITransactionRepository = {
   save: jest.fn(),
   findByUserId: jest.fn().mockResolvedValue([]),
   delete: jest.fn(),
+  update: jest.fn(),
 };
 
 const mockTransactionRepoWithData: ITransactionRepository = {
@@ -22,6 +23,7 @@ const mockTransactionRepoWithData: ITransactionRepository = {
     new Transaction({ userId: '123', type: 'EXPENSE', amount: 1000, category: 'Lazer' }),
   ]),
   delete: jest.fn(),
+  update: jest.fn(),
 };
 
 describe('Generate Financial Advice Use Case', () => {

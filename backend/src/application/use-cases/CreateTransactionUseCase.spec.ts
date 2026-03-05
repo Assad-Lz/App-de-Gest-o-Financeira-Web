@@ -34,6 +34,20 @@ class InMemoryTransactionRepository implements ITransactionRepository {
   async delete(id: string): Promise<void> {
     this.items = this.items.filter(item => item.id !== id);
   }
+
+  async update(id: string, data: Partial<Omit<Transaction, 'id' | 'userId'>>): Promise<Transaction> {
+    const index = this.items.findIndex(item => item.id === id);
+    if (index === -1) throw new Error('Transaction not found');
+    
+    const updated = new Transaction({
+      ...this.items[index],
+      ...data,
+      userId: this.items[index].userId
+    } as any, id);
+    
+    this.items[index] = updated;
+    return updated;
+  }
 }
 
 describe('Create Transaction Use Case', () => {
