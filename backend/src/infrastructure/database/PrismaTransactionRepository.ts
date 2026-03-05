@@ -48,4 +48,26 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       where: { id },
     });
   }
+
+  async update(id: string, data: Partial<Omit<Transaction, 'id' | 'userId'>>): Promise<Transaction> {
+    const updatedTx = await prisma.transaction.update({
+      where: { id },
+      data: {
+        type: data.type,
+        amount: data.amount,
+        category: data.category,
+        description: data.description,
+        date: data.date,
+      },
+    });
+
+    return new Transaction({
+      userId: updatedTx.userId,
+      type: updatedTx.type as 'INCOME' | 'EXPENSE',
+      amount: updatedTx.amount,
+      category: updatedTx.category,
+      description: updatedTx.description || undefined,
+      date: updatedTx.date,
+    }, updatedTx.id);
+  }
 }

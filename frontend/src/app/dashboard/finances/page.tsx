@@ -25,14 +25,13 @@ export default function FinancesPage() {
   const [filter, setFilter] = useState<FilterType>('ALL');
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ type: 'EXPENSE', amount: '', category: '', description: '' });
 
   const fetchTransactions = async () => {
     if (!session?.user) return;
     try {
-      const userId = (session.user as any).email; // No nosso backend, por enquanto identificamos pelo email ou uuid.
-      // Ajuste: O CreateUserController retorna o 'id' real do banco.
-      // Idealmente pegaríamos o 'id' da sessão.
+      const userId = (session.user as any).email; 
       const response = await axios.get(`${API_URL}/transactions/${userId}`);
       setTransactions(response.data);
     } catch (error) {
@@ -51,16 +50,26 @@ export default function FinancesPage() {
     
     setIsSubmitting(true);
     try {
-      await axios.post(`${API_URL}/transactions`, {
-        userId: (session.user as any).email, // Backend busca o ID pelo email se necessário, ou passamos o email para o usecase findByEmail
-        type: form.type,
-        amount: parseFloat(form.amount),
-        category: form.category,
-        description: form.description || undefined
-      });
+      if (editingId) {
+        // Modo Edição (PUT)
+        await axios.put(`${API_URL}/transactions/${editingId}`, {
+          type: form.type,
+          amount: parseFloat(form.amount),
+          category: form.category,
+          description: form.description || undefined
+        });
+      } else {
+        // Modo Criação (POST)
+        await axios.post(`${API_URL}/transactions`, {
+          userId: (session.user as any).email,
+          type: form.type,
+          amount: parseFloat(form.amount),
+          category: form.category,
+          description: form.description || undefined
+        });
+      }
       
-      setForm({ type: 'EXPENSE', amount: '', category: '', description: '' });
-      setShowForm(false);
+      resetForm();
       fetchTransactions();
     } catch (error) {
       console.error('Erro ao salvar transação:', error);
@@ -79,6 +88,24 @@ export default function FinancesPage() {
     } catch (error) {
       console.error('Erro ao deletar transação:', error);
     }
+  };
+
+  const startEditing = (tx: Transaction) => {
+    setForm({
+      type: tx.type,
+      amount: tx.amount.toString(),
+      category: tx.category,
+      description: tx.description || ''
+    });
+    setEditingId(tx.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const resetForm = () => {
+    setForm({ type: 'EXPENSE', amount: '', category: '', description: '' });
+    setEditingId(null);
+    setShowForm(false);
   };
 
   const filtered = filter === 'ALL' ? transactions : transactions.filter(t => t.type === filter);
@@ -105,17 +132,27 @@ export default function FinancesPage() {
           <p className="text-slate-400">Visualize e gerencie todas as suas movimentações financeiras.</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if(showForm && editingId) {
+              resetForm();
+            } else {
+              setShowForm(!showForm);
+            }
+          }}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-medium hover:opacity-90 transition-opacity shadow-lg shadow-emerald-600/20"
         >
-          <Plus className="w-4 h-4" /> Nova Transação
+          {showForm && editingId ? 'Cancelar Edição' : (
+            <><Plus className="w-4 h-4" /> Nova Transação</>
+          )}
         </button>
       </div>
 
-      {/* Nova Transação Form */}
+      {/* Nova/Editar Transação Form */}
       {showForm && (
         <div className="glass-panel p-6 rounded-2xl border border-emerald-500/20 space-y-4">
-          <h3 className="text-lg font-bold text-slate-200">Adicionar Transação</h3>
+          <h3 className="text-lg font-bold text-slate-200">
+            {editingId ? 'Editar Transação' : 'Adicionar Transação'}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-slate-400 mb-1 block">Tipo</label>
@@ -166,9 +203,9 @@ export default function FinancesPage() {
               className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Salvar Transação
+              {editingId ? 'Salvar Alterações' : 'Salvar Transação'}
             </button>
-            <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors">
+            <button onClick={resetForm} className="px-6 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 transition-colors">
               Cancelar
             </button>
           </div>
@@ -222,8 +259,8 @@ export default function FinancesPage() {
                       : <ArrowDownRight className="w-5 h-5 text-red-400" />
                     }
                   </div>
-                  <div>
-                    <p className="font-medium text-slate-200 text-sm">{tx.description || 'Sem descrição'}</p>
+                  <div className="cursor-pointer" onClick={() => startEditing(tx)}>
+                    <p className="font-medium text-slate-200 text-sm group-hover:text-emerald-400 transition-colors">{tx.description || 'Sem descrição'}</p>
                     <p className="text-xs text-slate-500">{tx.category} · {new Date(tx.date).toLocaleDateString('pt-BR')}</p>
                   </div>
                 </div>
