@@ -1,27 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import { TrendingUp, TrendingDown, Search, DollarSign, BarChart2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, Search, DollarSign, BarChart2, RefreshCw } from 'lucide-react';
 
-const mockAssets = [
-  { symbol: 'PETR4', name: 'Petrobras PN', price: 38.45, change: 2.34, volume: '42.5M', sector: 'Energia' },
-  { symbol: 'VALE3', name: 'Vale ON', price: 62.10, change: -1.20, volume: '38.1M', sector: 'Mineração' },
-  { symbol: 'ITUB4', name: 'Itaú Unibanco PN', price: 34.20, change: 0.80, volume: '55.2M', sector: 'Financeiro' },
-  { symbol: 'BBDC4', name: 'Bradesco PN', price: 16.45, change: -0.60, volume: '28.4M', sector: 'Financeiro' },
-  { symbol: 'ABEV3', name: 'Ambev ON', price: 11.90, change: 1.20, volume: '31.7M', sector: 'Consumo' },
-  { symbol: 'MGLU3', name: 'Magazine Luiza ON', price: 9.75, change: -3.40, volume: '18.9M', sector: 'Varejo' },
-  { symbol: 'WEGE3', name: 'WEG ON', price: 47.20, change: 1.80, volume: '22.3M', sector: 'Industrial' },
-  { symbol: 'RENT3', name: 'Localiza ON', price: 48.60, change: 0.45, volume: '14.5M', sector: 'Mobilidade' },
-];
+interface MarketAsset {
+  symbol: string;
+  name: string;
+  price: number;
+  changePerc?: number;
+}
 
 export default function MarketPage() {
+  const [assets, setAssets] = useState<MarketAsset[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [investAmount, setInvestAmount] = useState('');
   const [investSymbol, setInvestSymbol] = useState('PETR4');
   const [investYears, setInvestYears] = useState('5');
   const [simulationResult, setSimulationResult] = useState<number | null>(null);
 
-  const filtered = mockAssets.filter(a =>
+  useEffect(() => {
+    fetchAssets();
+  }, []);
+
+  const fetchAssets = async () => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/market/assets/top`);
+      const data = await resp.json();
+      if (Array.isArray(data)) {
+        setAssets(data);
+        if (data.length > 0) setInvestSymbol(data[0].symbol);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar ativos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filtered = assets.filter(a =>
     a.symbol.toLowerCase().includes(search.toLowerCase()) ||
     a.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -29,10 +47,9 @@ export default function MarketPage() {
   const handleSimulate = () => {
     const amount = parseFloat(investAmount);
     const years = parseInt(investYears);
-    const asset = mockAssets.find(a => a.symbol === investSymbol);
+    const asset = assets.find(a => a.symbol === investSymbol);
     if (!amount || !years || !asset) return;
-    // Simulação simplificada com taxa média de retorno
-    const annualReturn = 0.12; // 12% média histórica do mercado BR
+    const annualReturn = 0.12; 
     const result = amount * Math.pow(1 + annualReturn, years);
     setSimulationResult(result);
   };
@@ -74,34 +91,65 @@ export default function MarketPage() {
             />
           </div>
 
-          <div className="glass-panel rounded-2xl overflow-hidden">
-            <div className="grid grid-cols-5 gap-4 px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800">
-              <span className="col-span-2">Ativo</span>
-              <span className="text-right">Preço</span>
-              <span className="text-right">Variação</span>
-              <span className="text-right">Volume</span>
+          <div className="glass-panel rounded-2xl overflow-hidden relative min-h-[400px]">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-slate-800">
+              <div className="grid grid-cols-5 gap-4 flex-1 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <span className="col-span-2">Ativo</span>
+                <span className="text-right">Preço</span>
+                <span className="text-right">Variação</span>
+                <span className="text-right">Ação</span>
+              </div>
+              <button 
+                onClick={fetchAssets}
+                disabled={loading}
+                className="ml-4 p-1 hover:bg-slate-700 rounded transition-colors"
+                title="Atualizar dados"
+              >
+                <RefreshCw className={`w-4 h-4 text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+              </button>
             </div>
-            <div className="divide-y divide-slate-800/60">
-              {filtered.map(asset => (
-                <div key={asset.symbol} className="grid grid-cols-5 gap-4 px-4 py-3.5 hover:bg-slate-800/30 transition-colors items-center">
-                  <div className="col-span-2">
-                    <p className="font-bold text-slate-200 text-sm">{asset.symbol}</p>
-                    <p className="text-xs text-slate-500">{asset.name}</p>
-                  </div>
-                  <p className="text-right font-medium text-slate-200 text-sm">R$ {asset.price.toFixed(2)}</p>
-                  <div className="flex items-center justify-end gap-1">
-                    {asset.change >= 0
-                      ? <TrendingUp className="w-4 h-4 text-emerald-400" />
-                      : <TrendingDown className="w-4 h-4 text-red-400" />
-                    }
-                    <span className={`text-sm font-bold ${asset.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {asset.change > 0 ? '+' : ''}{asset.change}%
-                    </span>
-                  </div>
-                  <p className="text-right text-xs text-slate-500">{asset.volume}</p>
+
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm z-10">
+                <div className="flex flex-col items-center gap-3">
+                  <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+                  <p className="text-sm text-slate-400 font-medium">Sincronizando com a B3...</p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="text-slate-500">Nenhum ativo encontrado.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-800/60 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700/50">
+                {filtered.map(asset => (
+                  <div key={asset.symbol} className="grid grid-cols-5 gap-4 px-4 py-3.5 hover:bg-slate-800/30 transition-colors items-center">
+                    <div className="col-span-2">
+                      <p className="font-bold text-slate-200 text-sm">{asset.symbol}</p>
+                      <p className="text-xs text-slate-500">{asset.name || 'Empresa B3'}</p>
+                    </div>
+                    <p className="text-right font-medium text-slate-200 text-sm">R$ {asset.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                    <div className="flex items-center justify-end gap-1">
+                      {(asset.changePerc || 0) >= 0
+                        ? <TrendingUp className="w-4 h-4 text-emerald-400" />
+                        : <TrendingDown className="w-4 h-4 text-red-400" />
+                      }
+                      <span className={`text-sm font-bold ${(asset.changePerc || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {(asset.changePerc || 0) > 0 ? '+' : ''}{asset.changePerc?.toFixed(2)}%
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <button 
+                        onClick={() => { setInvestSymbol(asset.symbol); setSimulationResult(null); }}
+                        className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2.5 py-1 rounded-lg transition-colors"
+                      >
+                        Simular
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -120,7 +168,7 @@ export default function MarketPage() {
                   onChange={e => setInvestSymbol(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 text-slate-200 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
-                  {mockAssets.map(a => (
+                  {assets.map(a => (
                     <option key={a.symbol} value={a.symbol}>{a.symbol} - {a.name}</option>
                   ))}
                 </select>

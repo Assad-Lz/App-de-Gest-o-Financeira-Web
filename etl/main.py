@@ -87,21 +87,39 @@ def fetch_brapi_stocks():
         print("Aviso: BRAPI_TOKEN não definido no .env")
         return
     try:
-        response = requests.get(f"https://brapi.dev/api/quote/PETR4,VALE3,ITUB4,BBDC4,ABEV3?token={token}")
-        data = response.json()
+        # Lista expandida com 50 ativos principais da B3 (Blue chips e Mid caps)
+        tickers_list = [
+            "PETR4", "VALE3", "ITUB4", "BBDC4", "ABEV3", "MGLU3", "WEGE3", "RENT3", "HAPV3", "BBAS3", 
+            "SANB11", "B3SA3", "JBSS3", "SUZB3", "ELET3", "GGBR4", "CSNA3", "VIVT3", "RAIL3", "RDOR3",
+            "RADL3", "LREN3", "PRIO3", "TIMS3", "EGIE3", "VVB11", "IVVB11", "BOVA11", "SMAL11", "KLBN11",
+            "BPAC11", "CRFB3", "NTCO3", "BRFS3", "ENGI11", "TAEE11", "EQTL3", "FLRY3", "EZTC3", "CYRE3",
+            "GOAU4", "USIM5", "CMIG4", "CPLE6", "TOTS3", "PSSA3", "ALPA4", "MRVE3", "YDUQ3", "CIEL3"
+        ]
         
         assets = []
-        for stock in data.get('results', []):
-            assets.append({
-                'symbol': stock['symbol'],
-                'name': stock.get('shortName', stock['symbol']),
-                'price': float(stock['regularMarketPrice']),
-                'changePerc': float(stock.get('regularMarketChangePercent', 0.0))
-            })
+        for ticker in tickers_list:
+            try:
+                url = f"https://brapi.dev/api/quote/{ticker}?token={token}"
+                resp = requests.get(url)
+                data = resp.json()
+                
+                if 'results' in data and len(data['results']) > 0:
+                    stock = data['results'][0]
+                    assets.append({
+                        'symbol': stock['symbol'],
+                        'name': stock.get('shortName', stock['symbol']),
+                        'price': float(stock['regularMarketPrice']),
+                        'changePerc': float(stock.get('regularMarketChangePercent', 0.0))
+                    })
+                # Pequeno delay para evitar rate limit
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"Erro ao buscar {ticker}: {e}")
             
-        upsert_assets(assets)
+        if assets:
+            upsert_assets(assets)
     except Exception as e:
-        print(f"Erro ao buscar acoes: {e}")
+        print(f"Erro ao processar acoes: {e}")
 
 def run_pipeline():
     print(f"[{datetime.now()}] Iniciando extração ETL do mercado...")

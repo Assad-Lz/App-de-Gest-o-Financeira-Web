@@ -221,9 +221,11 @@ export default function AIConsultantPage() {
     setUserName(undefined);
     setConversationState('greeting');
     setLastIntent(undefined);
+    
+    // Pequeno delay para garantir que o estado seja limpo antes da nova intro
     setTimeout(() => {
       const introMsg: Message = {
-        id: 'intro-reset',
+        id: 'intro-reset-' + Date.now(),
         role: 'ai',
         content: '✨ Conversa reiniciada! Eu sou a **FinIA**. Como posso te chamar? 😊',
         timestamp: new Date(),
@@ -231,7 +233,7 @@ export default function AIConsultantPage() {
       setMessages([introMsg]);
       setConversationState('asking_name');
       inputRef.current?.focus();
-    }, 100);
+    }, 150);
   };
 
   const handleSend = useCallback(async (e: React.FormEvent) => {
@@ -375,10 +377,10 @@ export default function AIConsultantPage() {
                 )}
 
                 {/* Bubble */}
-                <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
+                <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line break-words shadow-sm ${
                   msg.role === 'ai'
-                    ? 'bg-slate-800/80 text-slate-200 border border-emerald-500/10 rounded-tl-none'
-                    : 'bg-emerald-600 text-white rounded-tr-none'
+                    ? 'bg-slate-800/80 text-slate-200 border border-emerald-500/10 rounded-tl-none mr-4'
+                    : 'bg-emerald-600 text-white rounded-tr-none ml-4'
                 }`}>
                   {renderContent(msg.content)}
                   {msg.role === 'ai' && isStreaming && messages[messages.length - 1]?.id === msg.id && (

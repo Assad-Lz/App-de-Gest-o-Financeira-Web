@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sfo1"],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "SUA_URL_DO_RENDER_AQUI",
+    "NEXTAUTH_URL": "SUA_URL_DA_VERCEL_AQUI",
+    "GOOGLE_CLIENT_ID": "@google_client_id",
+    "GOOGLE_CLIENT_SECRET": "@google_client_secret",
+    "NEXTAUTH_SECRET": "@nextauth_secret"
+  }
+}

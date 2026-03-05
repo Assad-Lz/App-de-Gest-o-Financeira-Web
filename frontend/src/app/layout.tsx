@@ -12,6 +12,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'FinEasy | Gestão Descomplicada',
   description: 'Acompanhe suas ações, gere dicas incríveis com IA e gerencie sua vida financeira de forma centralizada.',
+  icons: {
+    icon: '/logo.png',
+  },
 }
 
 export default function RootLayout({
