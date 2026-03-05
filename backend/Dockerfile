@@ -1,5 +1,6 @@
 # Base image
 FROM node:20-alpine AS base
+RUN apk add --no-cache openssl libc6-compat
 WORKDIR /usr/src/app
 
 # Development stage
@@ -21,7 +22,6 @@ RUN npm run build
 # Production stage
 FROM base AS production
 ENV NODE_ENV=production
-RUN apk add --no-cache openssl
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY package*.json ./
