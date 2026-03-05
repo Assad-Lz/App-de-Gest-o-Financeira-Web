@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <!-- Background Chart Bars -->
+  <rect x="140" y="140" width="30" height="90" rx="5" fill="#22c55e" /> <!-- Green -->
+  <rect x="180" y="100" width="30" height="130" rx="5" fill="#eab308" /> <!-- Yellow -->
+  <rect x="220" y="70" width="30" height="160" rx="5" fill="#3b82f6" /> <!-- Blue -->
+  
+  <!-- Upward Trend Arrow -->
+  <path d="M 120 200 Q 200 230 280 120" fill="none" stroke="#16a34a" stroke-width="15" stroke-linecap="round" />
+  <polygon points="270,110 300,100 290,130" fill="#16a34a" />
+  
+  <!-- Gold Coin -->
+  <circle cx="120" cy="180" r="35" fill="#eab308" stroke="#ca8a04" stroke-width="5" />
+  <text x="120" y="192" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#ffffff" text-anchor="middle">R$</text>
+
+  <!-- Sparkle -->
+  <path d="M 280 60 Q 285 70 295 75 Q 285 80 280 90 Q 275 80 265 75 Q 275 70 280 60" fill="#eab308" />
+</svg>

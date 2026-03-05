@@ -3,13 +3,14 @@
 import { motion } from 'framer-motion';
 import { LayoutDashboard, Wallet, LineChart, MessageSquarePlus, LogOut, Settings } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: 'Painel Geral', href: '/dashboard' },
-  { icon: Wallet, label: 'Minhas Finanças', href: '/dashboard/finances' },
+  { icon: Wallet, label: 'Despesas e Receitas', href: '/dashboard/finances' },
   { icon: LineChart, label: 'Mercado de Ações', href: '/dashboard/market' },
-  { icon: MessageSquarePlus, label: 'Dicas da IA', href: '/dashboard/ai' },
+  { icon: MessageSquarePlus, label: 'Chat IA Consultoria', href: '/dashboard/ai' },
   { icon: Settings, label: 'Configurações', href: '/dashboard/settings' },
 ];
 
@@ -17,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden selection:bg-primary/30">
+    <div className="flex h-screen w-full bg-background overflow-hidden selection:bg-emerald-500/30">
       {/* Sidebar Overlay (Glassmorphism) */}
       <motion.aside 
         initial={{ x: -300, opacity: 0 }}
@@ -26,12 +27,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="w-72 h-full flex flex-col border-r border-slate-800/60 bg-slate-900/40 backdrop-blur-2xl z-20"
       >
         <div className="p-6 flex items-center gap-3 border-b border-slate-800/40">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="font-bold text-white text-xl">AF</span>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-yellow-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 p-1">
+            <Image src="/logo.png" alt="FinEasy" width={32} height={32} />
           </div>
           <div>
-            <h2 className="font-bold text-slate-200 tracking-tight leading-none">Antigravity</h2>
-            <span className="text-xs text-slate-500 font-medium tracking-wider uppercase">Finance</span>
+            <h2 className="font-bold text-slate-200 tracking-tight leading-none text-xl">FinEasy</h2>
+            <span className="text-xs text-emerald-500 font-bold tracking-wider uppercase">Plataforma</span>
           </div>
         </div>
 
