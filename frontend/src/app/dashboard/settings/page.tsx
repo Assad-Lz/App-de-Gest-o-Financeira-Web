@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Bell, Shield, Palette, ChevronRight, Loader2, Download } from 'lucide-react';
+import { User, Bell, Shield, Palette, ChevronRight, Loader2, Download, FileText } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -22,19 +24,85 @@ export default function SettingsPage() {
     try {
       const email = (session.user as any).email;
       const res = await axios.get(`${API_URL}/transactions/${email}`);
-      const dataStr = JSON.stringify(res.data, null, 2);
+      const transactions = res.data;
+
+      // jsPDF Init
+      const doc = new jsPDF();
       
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `fin_easy_export_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Cores (FinEasy Emerald 500)
+      const primaryColor = [16, 185, 129] as [number, number, number];
+      
+      // Cabeçalho
+      doc.setFontSize(22);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text("FinEasy - Relatorio Financeiro", 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} as ${new Date().toLocaleTimeString('pt-BR')}`, 14, 30);
+      doc.text(`Usuario: ${session.user.name || email}`, 14, 35);
+      
+      // Resumo Math
+      const totalIncome = transactions.filter((t: any) => t.type === 'INCOME').reduce((a: number, t: any) => a + t.amount, 0);
+      const totalExpense = transactions.filter((t: any) => t.type === 'EXPENSE').reduce((a: number, t: any) => a + t.amount, 0);
+      const balance = totalIncome - totalExpense;
+
+      // Painel Resumo
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Resumo do Periodo:`, 14, 45);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(16, 185, 129); // Verde
+      doc.text(`Entradas Totais: R$ ${totalIncome.toFixed(2)}`, 14, 52);
+      doc.setTextColor(239, 68, 68); // Vermelho
+      doc.text(`Despesas Totais: R$ ${totalExpense.toFixed(2)}`, 14, 58);
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(balance >= 0 ? 16 : 239, balance >= 0 ? 185 : 68, balance >= 0 ? 129 : 68);
+      doc.text(`Saldo Final: R$ ${balance.toFixed(2)}`, 14, 66);
+      
+      // Tabela de Transações
+      const tableColumn = ["Data", "Tipo", "Categoria", "Descricao", "Valor"];
+      const tableRows: any[] = [];
+
+      transactions.forEach((tx: any) => {
+        const txData = [
+          new Date(tx.date).toLocaleDateString('pt-BR'),
+          tx.type === 'INCOME' ? 'Entrada' : 'Despesa',
+          tx.category,
+          tx.description || '-',
+          `R$ ${tx.amount.toFixed(2)}`
+        ];
+        tableRows.push(txData);
+      });
+
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 76,
+        theme: 'striped',
+        headStyles: { fillColor: primaryColor },
+        styles: { fontSize: 9 },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 1) {
+             const type = data.cell.raw;
+             if (type === 'Entrada') {
+               data.cell.styles.textColor = [16, 185, 129];
+               data.cell.styles.fontStyle = 'bold';
+             } else {
+               data.cell.styles.textColor = [239, 68, 68];
+               data.cell.styles.fontStyle = 'bold';
+             }
+          }
+        }
+      });
+
+      doc.save(`FinEasy_Relatorio_${new Date().toISOString().split('T')[0]}.pdf`);
+      
     } catch (err) {
-      console.error('Erro ao exportar:', err);
+      console.error('Erro ao exportar PDF:', err);
       alert('Houve um erro ao baixar os dados. Tente novamente.');
     } finally {
       setIsExporting(false);
@@ -128,12 +196,12 @@ export default function SettingsPage() {
           >
             <div>
               <p className="font-medium text-sm text-slate-200 flex items-center gap-2">
-                Exportar meus dados
+                Exportar Relatório PDF
                 {isExporting && <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-500" />}
               </p>
-              <p className="text-slate-500 text-xs mt-0.5">Baixe (.json) o raio-x histórico do seu patrimônio.</p>
+              <p className="text-slate-500 text-xs mt-0.5">Baixe (.pdf) o raio-x histórico do seu patrimônio com a nossa logomarca.</p>
             </div>
-            {isExporting ? <Loader2 className="w-4 h-4 text-slate-500 animate-spin" /> : <Download className="w-4 h-4 text-slate-400 group-hover:text-emerald-400" />}
+            {isExporting ? <Loader2 className="w-4 h-4 text-slate-500 animate-spin" /> : <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400" />}
           </button>
 
           <button className="flex items-center justify-between p-4 bg-slate-800/40 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl cursor-pointer transition-colors w-full text-left">

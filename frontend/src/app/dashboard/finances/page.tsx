@@ -30,7 +30,9 @@ export default function FinancesPage() {
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ type: 'EXPENSE', amount: '', category: '', description: '' });
+  const [form, setForm] = useState({ type: 'EXPENSE', amount: '', category: '', description: '', date: new Date().toISOString().split('T')[0] });
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   const fetchTransactions = async () => {
     if (!session?.user) return;
@@ -66,7 +68,8 @@ export default function FinancesPage() {
           type: form.type,
           amount: parseFloat(form.amount),
           category: form.category,
-          description: form.description || undefined
+          description: form.description || undefined,
+          date: new Date(`${form.date}T12:00:00Z`).toISOString()
         });
       } else {
         // Modo Criação (POST)
@@ -75,7 +78,8 @@ export default function FinancesPage() {
           type: form.type,
           amount: parseFloat(form.amount),
           category: form.category,
-          description: form.description || undefined
+          description: form.description || undefined,
+          date: new Date(`${form.date}T12:00:00Z`).toISOString()
         });
       }
       
@@ -105,7 +109,8 @@ export default function FinancesPage() {
       type: tx.type,
       amount: tx.amount.toString(),
       category: tx.category,
-      description: tx.description || ''
+      description: tx.description || '',
+      date: tx.date ? new Date(tx.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     });
     setEditingId(tx.id);
     setShowForm(true);
@@ -113,16 +118,33 @@ export default function FinancesPage() {
   };
 
   const resetForm = () => {
-    setForm({ type: 'EXPENSE', amount: '', category: '', description: '' });
+    setForm({ type: 'EXPENSE', amount: '', category: '', description: '', date: new Date().toISOString().split('T')[0] });
     setEditingId(null);
     setShowForm(false);
   };
 
-  const filtered = filter === 'ALL' ? transactions : transactions.filter(t => t.type === filter);
+  // Filtro por Mês/Ano (Planejamento)
+  const monthlyTransactions = transactions.filter(t => {
+    const d = new Date(t.date);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
 
-  const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
-  const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
+  const filtered = filter === 'ALL' ? monthlyTransactions : monthlyTransactions.filter(t => t.type === filter);
+
+  const totalIncome = monthlyTransactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
+  const totalExpense = monthlyTransactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
   const balance = totalIncome - totalExpense;
+
+  const changeMonth = (offset: number) => {
+    let newMonth = currentMonth + offset;
+    let newYear = currentYear;
+    if (newMonth > 11) { newMonth = 0; newYear++; }
+    if (newMonth < 0) { newMonth = 11; newYear--; }
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
+  };
+  
+  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
   const containerVariants: any = {
     hidden: { opacity: 0 },
@@ -177,6 +199,20 @@ export default function FinancesPage() {
           {showForm && editingId ? 'Cancelar Edição' : (
             <><Plus className="w-4 h-4" /> Nova Transação</>
           )}
+        </button>
+      </motion.div>
+
+      {/* Planejamento Mensal - Navegador */}
+      <motion.div variants={itemVariants} className="flex items-center justify-between bg-slate-900 border border-white/5 rounded-[1.5rem] p-4 lg:p-6 shadow-2xl">
+        <button onClick={() => changeMonth(-1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors">
+           <ArrowDownRight className="w-5 h-5 rotate-45" />
+        </button>
+        <div className="flex flex-col items-center">
+           <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mb-1">Mês de Referência</span>
+           <h2 className="text-xl md:text-2xl font-black text-white uppercase">{monthNames[currentMonth]} {currentYear}</h2>
+        </div>
+        <button onClick={() => changeMonth(1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors">
+           <ArrowUpRight className="w-5 h-5 rotate-45" />
         </button>
       </motion.div>
 
@@ -240,8 +276,8 @@ export default function FinancesPage() {
                     onChange={e => setForm({ ...form, type: e.target.value })}
                     className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm appearance-none cursor-pointer"
                   >
-                    <option value="EXPENSE">Saída (Débito)</option>
-                    <option value="INCOME">Entrada (Crédito)</option>
+                    <option value="EXPENSE">Despesa (Sai dinheiro)</option>
+                    <option value="INCOME">Entrada (Entra dinheiro)</option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -254,6 +290,16 @@ export default function FinancesPage() {
                     className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-700"
                   />
                 </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">Data (Para planejamento informe datas futuras)</label>
+                <input
+                  type="date"
+                  value={form.date}
+                  onChange={e => setForm({ ...form, date: e.target.value })}
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-[13px]"
+                />
               </div>
 
               <div className="space-y-3">
@@ -325,7 +371,7 @@ export default function FinancesPage() {
                    onClick={() => setFilter(f)}
                    className={`px-4 lg:px-6 py-2.5 lg:py-2 rounded-xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all ${filter === f ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                  >
-                   {f === 'ALL' ? 'History' : f === 'INCOME' ? 'Credit' : 'Debit'}
+                   {f === 'ALL' ? 'Histórico' : f === 'INCOME' ? 'Entradas' : 'Despesas'}
                  </button>
                ))}
              </div>
@@ -345,23 +391,23 @@ export default function FinancesPage() {
             <div className="divide-y divide-white/[0.03] max-h-[600px] lg:max-h-[800px] overflow-y-auto custom-scrollbar">
               {filtered.map(tx => (
                 <div key={tx.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 lg:px-8 lg:py-6 hover:bg-white/[0.02] transition-colors group relative gap-4 sm:gap-0">
-                  <div className="flex items-start lg:items-center gap-4 lg:gap-6">
+                  <div className="flex items-start lg:items-center gap-4 lg:gap-6 w-full sm:w-auto overflow-hidden">
                     <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-[1.25rem] lg:rounded-2xl flex items-center justify-center flex-shrink-0 border ${tx.type === 'INCOME' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400' : 'bg-red-500/5 border-red-500/10 text-red-400'} shadow-inner group-hover:scale-110 transition-transform duration-500`}>
                       {tx.type === 'INCOME'
                         ? <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6" />
                         : <ArrowDownRight className="w-5 h-5 lg:w-6 lg:h-6" />
                       }
                     </div>
-                    <div className="cursor-pointer" onClick={() => startEditing(tx)}>
-                      <p className="font-black text-white text-xs lg:text-sm tracking-tight group-hover:text-emerald-400 transition-colors uppercase truncate">{tx.description || 'Null Entry'}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1 lg:mt-1.5">
+                    <div className="cursor-pointer min-w-0 flex-1 overflow-hidden" onClick={() => startEditing(tx)}>
+                      <p className="font-black text-white text-xs lg:text-sm tracking-tight group-hover:text-emerald-400 transition-colors uppercase truncate w-full">{tx.description || 'Null Entry'}</p>
+                      <div className="flex items-center gap-2 mt-1 lg:mt-1.5 overflow-hidden">
                         <span className="text-[9px] lg:text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{tx.category}</span>
                         <div className="w-1 h-1 rounded-full bg-slate-700 flex-shrink-0" />
-                        <span className="text-[9px] lg:text-[10px] text-slate-500 font-bold uppercase tracking-tighter whitespace-nowrap">{new Date(tx.date).toLocaleDateString('pt-BR')}</span>
+                        <span className="text-[9px] lg:text-[10px] text-slate-500 font-bold uppercase tracking-tighter shrink-0">{new Date(tx.date).toLocaleDateString('pt-BR')}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-4 lg:gap-8 mt-2 sm:mt-0 ml-16 sm:ml-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 lg:gap-8 mt-2 sm:mt-0 ml-16 sm:ml-0 shrink-0">
                     <p className={`text-lg lg:text-xl font-black italic tracking-tighter ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-red-400'}`}>
                       <span className="text-[9px] lg:text-[10px] font-medium not-italic mr-1 opacity-50 uppercase">{tx.type === 'INCOME' ? 'cr' : 'dt'}</span>
                       {tx.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}

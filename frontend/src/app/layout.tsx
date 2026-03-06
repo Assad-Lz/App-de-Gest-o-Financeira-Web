@@ -31,9 +31,9 @@ export default function RootLayout({
             <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-600/10 blur-[120px] pointer-events-none -z-10" />
             <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-500/5 blur-[120px] pointer-events-none -z-10" />
             
-            <div className="flex-1 flex flex-col relative z-0">
+            <main className="flex-1 flex flex-col relative z-0">
               {children}
-            </div>
+            </main>
           </div>
         </NextAuthProvider>
       </body>
