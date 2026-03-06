@@ -20,6 +20,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Close sidebar on path change
   useEffect(() => {
@@ -34,6 +36,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart === null || touchEnd === null) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    // Abrir menu arrastando da borda esquerda
+    if (isRightSwipe && touchStart < 60 && !isMobileMenuOpen) {
+      setIsMobileMenuOpen(true);
+    }
+    // Fechar menu arrastando para a esquerda
+    if (isLeftSwipe && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -93,7 +120,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-background overflow-x-hidden selection:bg-emerald-500/30">
+    <div 
+      className="flex min-h-screen w-full bg-background overflow-x-hidden selection:bg-emerald-500/30"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Mobile Header */}
       <div className={`lg:hidden fixed top-0 left-0 right-0 h-16 z-[40] flex items-center justify-between px-6 transition-all duration-300 ${scrolled ? 'bg-slate-950/80 backdrop-blur-xl border-b border-white/5 shadow-2xl' : 'bg-transparent'}`}>
         <div className="flex items-center gap-3">
@@ -129,6 +161,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.05}
+              onDragEnd={(e, { offset, velocity }) => {
+                if (offset.x < -50 || velocity.x < -500) {
+                  setIsMobileMenuOpen(false);
+                }
+              }}
               className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-slate-950 z-[50] border-r border-white/10 shadow-2xl"
             >
               <SidebarContent />
