@@ -36,7 +36,7 @@ export class CreateTransactionUseCase {
     }
 
     const transaction = new Transaction({
-      userId: user.id, // Aqui injetamos o UUID real p/ Foreign Key Constraints
+      userId: user.id as string, // Aqui injetamos o UUID real p/ Foreign Key Constraints
       type: data.type,
       amount: data.amount,
       category: data.category || 'Geral',

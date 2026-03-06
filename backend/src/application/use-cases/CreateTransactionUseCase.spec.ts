@@ -4,8 +4,8 @@ import { ITransactionRepository } from '../../domain/contracts/ITransactionRepos
 
 // Usado o Any aqui propositalmente para mockar a interface sem importar todo o IUserRepository
 const mockUserRepository = {
-  findByEmail: jest.fn(),
-  save: jest.fn()
+  findByEmail: jest.fn().mockResolvedValue({ id: 'user-123' }),
+  save: jest.fn().mockResolvedValue({ id: 'user-123' })
 } as any;
 
 class InMemoryTransactionRepository implements ITransactionRepository {
@@ -61,7 +61,7 @@ describe('Create Transaction Use Case', () => {
 
   it('should be able to insert a new income transaction', async () => {
     const transaction = await createTransactionUseCase.execute({
-      userId: 'user-123',
+      userEmail: 'user@123.com',
       type: 'INCOME',
       amount: 5000,
       category: 'Salário',
@@ -75,7 +75,7 @@ describe('Create Transaction Use Case', () => {
 
   it('should transform negative amounts into absolute values through the Entity', async () => {
     const transaction = await createTransactionUseCase.execute({
-      userId: 'user-123',
+      userEmail: 'user@123.com',
       type: 'EXPENSE',
       amount: 150, // A entity garante valor absoluto mesmo se passar + ou -. O UseCase valida se for zero.
       category: 'Alimentação'
@@ -88,7 +88,7 @@ describe('Create Transaction Use Case', () => {
   it('should reject transactions with zero or negative inserted amount at the UseCase level', async () => {
     await expect(
       createTransactionUseCase.execute({
-        userId: 'user-123',
+        userEmail: 'user@123.com',
         type: 'EXPENSE',
         amount: -50,
         category: 'Mercado'
