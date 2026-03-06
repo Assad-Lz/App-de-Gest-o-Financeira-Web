@@ -279,15 +279,15 @@ export default function MarketPage() {
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-emerald-500/5 border border-emerald-500/20 rounded-[1.5rem] lg:rounded-[2rem] p-6 lg:p-8 text-center mt-8 lg:mt-10 relative overflow-hidden"
+                    className="bg-emerald-500/5 border border-emerald-500/20 rounded-[1.5rem] lg:rounded-[2rem] p-4 lg:p-8 text-center mt-6 lg:mt-10 relative overflow-hidden"
                   >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-30" />
-                    <p className="text-[8px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 lg:mb-3">Valor Estimado do Patrimônio</p>
-                    <p className="text-2xl sm:text-3xl lg:text-4xl font-black text-emerald-400 tracking-tighter mb-1 lg:mb-2 italic break-words whitespace-normal leading-tight">
-                      <span className="text-xs lg:text-sm font-medium not-italic mr-1 text-emerald-600 block sm:inline mb-1 sm:mb-0">R$</span>
+                    <p className="text-[8px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 lg:mb-3 truncate">Valor Estimado do Patrimônio</p>
+                    <p className="text-xl sm:text-2xl lg:text-4xl font-black text-emerald-400 tracking-tighter italic lg:mb-2 truncate">
+                      <span className="text-[10px] lg:text-sm font-medium not-italic mr-1 text-emerald-600 block sm:inline">R$</span>
                       {simulationResult.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
-                    <p className="text-[8px] lg:text-[9px] text-slate-600 font-bold uppercase tracking-tighter mt-2">Projeção Linear com TIR de 12% a.a.</p>
+                    <p className="text-[7px] lg:text-[9px] text-slate-600 font-bold uppercase tracking-tighter mt-1 lg:mt-2 truncate">Projeção Linear com TIR de 12% a.a.</p>
                   </motion.div>
                 )}
               </div>

@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter, Loader2, X, Tag } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter, Loader2, X, Tag, ChevronLeft, ChevronRight, PieChart as PieIcon, LineChart as LineIcon } from 'lucide-react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+
+const COLORS = ['#10b981', '#eab308', '#3b82f6', '#f43f5e', '#a855f7', '#ec4899', '#f97316', '#64748b'];
 
 const EXPENSE_CATEGORIES = ['Custos Fixos', 'Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Outros'];
 const INCOME_CATEGORIES = ['Salário', 'Dividendos', 'Rendimentos', 'Vendas', 'Freelance', 'Restituição', 'Bônus', 'Outros'];
@@ -146,6 +149,31 @@ export default function FinancesPage() {
   
   const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
+  // Agrupamento para Gráfico de Pizza (Categorias de Despesa do Mês)
+  const categoryTotals = monthlyTransactions
+    .filter(t => t.type === 'EXPENSE')
+    .reduce((acc: any, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+    }, {});
+
+  const pieData = Object.keys(categoryTotals)
+    .sort((a, b) => categoryTotals[b] - categoryTotals[a]) // Ordena para as maiores fatias
+    .map(cat => ({
+      name: cat,
+      value: categoryTotals[cat]
+    }));
+
+  // Agrupamento para Gráfico de Área (Fluxo Diário do Mês)
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const dailyFlowData = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const dayTransactions = monthlyTransactions.filter(t => new Date(t.date).getDate() === day);
+    const inc = dayTransactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0);
+    const exp = dayTransactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0);
+    return { day: day.toString(), income: inc, expense: exp };
+  });
+
   const containerVariants: any = {
     hidden: { opacity: 0 },
     show: {
@@ -205,14 +233,14 @@ export default function FinancesPage() {
       {/* Planejamento Mensal - Navegador */}
       <motion.div variants={itemVariants} className="flex items-center justify-between bg-slate-900 border border-white/5 rounded-[1.5rem] p-4 lg:p-6 shadow-2xl">
         <button onClick={() => changeMonth(-1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors">
-           <ArrowDownRight className="w-5 h-5 rotate-45" />
+           <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
         </button>
         <div className="flex flex-col items-center">
-           <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mb-1">Mês de Referência</span>
-           <h2 className="text-xl md:text-2xl font-black text-white uppercase">{monthNames[currentMonth]} {currentYear}</h2>
+           <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mb-1">Painel Mensal</span>
+           <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider">{monthNames[currentMonth]} {currentYear}</h2>
         </div>
         <button onClick={() => changeMonth(1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors">
-           <ArrowUpRight className="w-5 h-5 rotate-45" />
+           <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
         </button>
       </motion.div>
 
@@ -241,6 +269,87 @@ export default function FinancesPage() {
             </p>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* Gráficos Mensais Dinâmicos */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Gráfico de Área (Fluxo Diário) */}
+        <motion.div className="lg:col-span-2 glass-panel rounded-[2rem] p-5 lg:p-8 flex flex-col border-white/5 border-glow">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
+            <h3 className="text-sm lg:text-md font-black text-white tracking-widest uppercase flex items-center gap-2"><LineIcon className="w-4 h-4 text-blue-500" /> Fluxo Diário</h3>
+            <div className="flex items-center gap-3 lg:gap-4 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Entradas</div>
+              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /> Saídas</div>
+            </div>
+          </div>
+          <div className="h-60 lg:h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={dailyFlowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorIncomeDaily" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorExpenseDaily" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4}/>
+                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="day" stroke="#334155" fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontWeight: 600 }} dy={10} />
+                <YAxis stroke="#334155" fontSize={10} tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontWeight: 600 }} tickFormatter={(val) => `R$${val}`} />
+                <CartesianGrid strokeDasharray="4 4" stroke="#ffffff05" vertical={false} />
+                <RechartsTooltip 
+                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '1.25rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                  itemStyle={{ fontSize: '0.75rem', fontWeight: 700 }}
+                />
+                <Area type="monotone" dataKey="income" name="Entrada" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncomeDaily)" />
+                <Area type="monotone" dataKey="expense" name="Saída" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenseDaily)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Gráfico de Pizza (Categorias) */}
+        <motion.div className="glass-panel rounded-[2rem] p-5 lg:p-8 flex flex-col border-white/5 border-glow">
+           <div className="flex items-center gap-3 mb-6 lg:mb-8">
+             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><PieIcon className="w-4 h-4" /></div>
+             <h3 className="text-sm lg:text-md font-black text-white uppercase tracking-widest">Despesas por Categoria</h3>
+           </div>
+           <div className="flex-1 w-full flex items-center justify-center min-h-[200px]">
+               {pieData.length === 0 ? (
+                 <div className="text-center">
+                   <p className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">Sem despesas registradas</p>
+                 </div>
+               ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" cornerRadius={4}>
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(255,255,255,0.05)" strokeWidth={2} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '1rem', fontSize: '12px' }}/>
+                    <Legend verticalAlign="bottom" height={36} content={
+                      (props) => {
+                         const { payload } = props;
+                         return (
+                           <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase mt-4">
+                             {payload?.map((entry, index) => (
+                               <li key={`item-${index}`} className="flex items-center gap-1.5 truncate max-w-[100px]">
+                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                 <span className="truncate">{entry.value}</span>
+                               </li>
+                             ))}
+                           </ul>
+                         );
+                      }
+                    }/>
+                  </PieChart>
+                </ResponsiveContainer>
+               )}
+           </div>
+        </motion.div>
       </motion.div>
 
       {/* Nova/Editar Transação Popup (Modal) */}
@@ -298,7 +407,7 @@ export default function FinancesPage() {
                   type="date"
                   value={form.date}
                   onChange={e => setForm({ ...form, date: e.target.value })}
-                  className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-[13px]"
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-[13px] date-picker-custom"
                 />
               </div>
 

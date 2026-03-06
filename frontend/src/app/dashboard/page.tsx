@@ -252,7 +252,7 @@ export default function DashboardHome() {
           {/* AI Advice Widget */}
           <motion.div 
             whileHover={{ scale: 1.02, y: -5 }}
-            className="glass-panel rounded-[2rem] p-6 lg:p-8 bg-gradient-to-br from-emerald-500/10 via-slate-950/40 to-slate-950/60 border-emerald-500/10 relative overflow-hidden flex-1 group cursor-pointer hover:border-emerald-500/30 transition-all duration-500 min-h-[250px] lg:min-h-0"
+            className="glass-panel rounded-[2rem] p-6 lg:p-8 bg-gradient-to-br from-emerald-500/10 via-slate-950/40 to-slate-950/60 border-emerald-500/10 relative overflow-hidden group cursor-pointer hover:border-emerald-500/30 transition-all duration-500 shrink-0"
           >
             <div className="absolute -top-12 -right-12 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <Sparkles className="w-40 h-40 lg:w-48 lg:h-48 text-emerald-400 rotate-12" />
@@ -279,7 +279,7 @@ export default function DashboardHome() {
           {/* Market Top Assets */}
           <motion.div 
             whileHover={{ scale: 1.01 }}
-            className="glass-panel rounded-[2rem] p-6 lg:p-8 flex-1 border-white/5 border-glow"
+            className="glass-panel rounded-[2rem] p-6 lg:p-8 shrink-0 border-white/5 border-glow max-h-[400px] overflow-y-auto custom-scrollbar"
           >
              <div className="flex items-center justify-between mb-6 lg:mb-8">
                <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-widest">Market Feed</h3>

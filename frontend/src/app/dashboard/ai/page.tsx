@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Send, Bot, User, Sparkles, RefreshCw, Copy, ThumbsUp, ThumbsDown,
-  CheckCheck, TrendingUp, BookOpen, Heart, HelpCircle, DollarSign, Zap
+  CheckCheck, TrendingUp, BookOpen, Heart, HelpCircle, DollarSign, Zap,
+  Database
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -113,6 +116,7 @@ const extractName = (text: string): string => {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function AIConsultantPage() {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -122,9 +126,56 @@ export default function AIConsultantPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [lastIntent, setLastIntent] = useState<IntentCategory | undefined>(undefined);
   const [isStreaming, setIsStreaming] = useState(false);
+  
+  // States para o Contexto de Dados Financeiros
+  const [syncingData, setSyncingData] = useState(false);
+  const [realContext, setRealContext] = useState<{
+    saldo: number; receitaMensal: number; despesaMensal: number; maiorCategoria: string;
+  } | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ─── 3.5. Buscar e compilar Dados Reais do Banco ──────────────────────────
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!session?.user) return;
+      setSyncingData(true);
+      try {
+        const userId = (session.user as any).email;
+        const response = await axios.get(`${BACKEND_URL}/transactions/${userId}`);
+        const txs: any[] = response.data || [];
+        
+        let income = 0;
+        let expense = 0;
+        const categories: Record<string, number> = {};
+
+        txs.forEach(t => {
+          if (t.type === 'INCOME') income += t.amount;
+          if (t.type === 'EXPENSE') {
+            expense += t.amount;
+            categories[t.category] = (categories[t.category] || 0) + t.amount;
+          }
+        });
+
+        const sortedCats = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+        const topCat = sortedCats.length > 0 ? sortedCats[0][0] : 'N/A';
+
+        setRealContext({
+          saldo: income - expense,
+          receitaMensal: income,
+          despesaMensal: expense,
+          maiorCategoria: topCat
+        });
+        
+      } catch (error) {
+        console.error('Falha ao sincronizar contexto para IA', error);
+      } finally {
+        setSyncingData(false);
+      }
+    };
+    fetchUserData();
+  }, [session]);
 
   // ─── 4. Histórico persistente no localStorage ──────────────────────────────
   useEffect(() => {
@@ -288,11 +339,11 @@ export default function AIConsultantPage() {
 
     // ─── 9. Contexto financeiro do usuário enviado ao backend ────────────────
     const userFinancialContext = {
-      saldo: 15340.50,
-      receitaMensal: 8500,
-      despesaMensal: 5430,
-      maiorCategoria: 'Moradia',
-      economiaPerc: 36.1,
+      saldo: realContext?.saldo ?? 0,
+      receitaMensal: realContext?.receitaMensal ?? 0,
+      despesaMensal: realContext?.despesaMensal ?? 0,
+      maiorCategoria: realContext?.maiorCategoria ?? 'Nenhum Gasto Registrado',
+      economiaPerc: realContext?.receitaMensal ? ((realContext.receitaMensal - realContext.despesaMensal) / realContext.receitaMensal) * 100 : 0,
     };
 
     try {
@@ -346,9 +397,21 @@ export default function AIConsultantPage() {
             {userName ? `Olá, ${userName}! Sua consultora pronta. ✨` : 'Nossa IA financeira generativa.'}
           </p>
         </div>
-        <button onClick={handleReset} title="Nova conversa" className="p-2 lg:p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 transition-colors border border-slate-700">
-          <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          {syncingData && (
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full lg:rounded-xl border border-blue-500/20 text-[9px] font-bold uppercase tracking-widest animate-pulse mr-2">
+              <Database className="w-3 h-3" /> Sincronizando
+            </div>
+          )}
+          {realContext && !syncingData && (
+             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 text-[9px] font-bold uppercase tracking-widest mr-2 cursor-help" title={`Saldo Oculto: R$ ${realContext.saldo.toFixed(2)}`}>
+               <CheckCheck className="w-3 h-3" /> Ledger Conectado
+             </div>
+          )}
+          <button onClick={handleReset} title="Nova conversa" className="p-2 lg:p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 transition-colors border border-slate-700">
+            <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Chat Container */}
