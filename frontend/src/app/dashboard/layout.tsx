@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Wallet, LineChart, MessageSquarePlus, LogOut, Settings, Landmark, Menu, X, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Wallet, LineChart, MessageSquarePlus, LogOut, Settings, Landmark, Menu, X, ChevronRight, Moon, Sun } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: 'Painel Geral', href: '/dashboard' },
@@ -22,6 +23,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [scrolled, setScrolled] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   // Close sidebar on path change
   useEffect(() => {
@@ -121,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div 
-      className="flex min-h-screen w-full bg-background overflow-x-hidden selection:bg-emerald-500/30"
+      className="flex h-[100dvh] w-full bg-background overflow-hidden selection:bg-emerald-500/30"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -132,16 +138,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Image src="/logo.png" alt="FinEasy" width={32} height={32} className="object-contain" />
           <span className="font-bold text-white tracking-tighter text-lg italic">FinEasy</span>
         </div>
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-xl bg-white/5 border border-white/10 text-white active:scale-95 transition-all"
-        >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {mounted && (
+            <button 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-emerald-400 active:scale-95 transition-all"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          )}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-xl bg-white/5 border border-white/10 text-white active:scale-95 transition-all"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-72 h-screen sticky top-0 border-r border-white/5 bg-slate-950/20 backdrop-blur-3xl z-20 shrink-0">
+      <aside className="hidden lg:flex w-72 h-screen border-r border-white/5 bg-slate-950/20 backdrop-blur-3xl z-20 shrink-0">
         <SidebarContent />
       </aside>
 
@@ -178,14 +194,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </AnimatePresence>
 
       {/* Main Content Area */}
-      <main className={`flex-1 min-h-screen relative flex flex-col pt-16 lg:pt-0 pb-20 lg:pb-0 transition-all duration-500 ${isMobileMenuOpen ? 'blur-sm lg:blur-none opacity-50 lg:opacity-100' : ''}`}>
-        {/* Subtle top glare */}
-        <div className="absolute top-0 left-0 right-0 h-64 bg-emerald-500/5 pointer-events-none" />
-        
-        <div className="relative z-10 p-6 md:p-8 lg:p-12 overflow-x-hidden">
-          {children}
-        </div>
-      </main>
+      <div className="flex-1 overflow-hidden relative flex flex-col">
+        {/* Desktop Header Elegante */}
+        <header className="hidden lg:flex items-center justify-between px-10 py-5 bg-background/50 backdrop-blur-3xl border-b border-white/5 z-30 shrink-0 shadow-sm relative">
+          <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent pointer-events-none" />
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black tracking-tight text-white uppercase italic">
+              Bem Vindo <span className="text-emerald-400">De Volta</span>
+            </h1>
+            <p className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest">Painel FinEasy 4.1</p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {/* Dark Mode Toggle */}
+            {mounted && (
+              <button 
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="group flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/5 bg-slate-900/50 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all duration-300"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                )}
+                <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 group-hover:text-emerald-400 transition-colors">
+                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </span>
+              </button>
+            )}
+            
+            {/* Dummy Profile */}
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-emerald-300 p-0.5 border border-white/10 shadow-lg cursor-pointer hover:scale-105 transition-transform">
+              <div className="w-full h-full rounded-full bg-slate-900 border-2 border-background flex items-center justify-center overflow-hidden">
+                <Image src="/logo.png" alt="Profile" width={24} height={24} className="opacity-70" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Main Area */}
+        <main className={`flex-1 h-full overflow-y-auto overflow-x-hidden relative pt-16 lg:pt-0 pb-20 lg:pb-0 transition-all duration-500 custom-scrollbar ${isMobileMenuOpen ? 'blur-sm lg:blur-none opacity-50 lg:opacity-100' : ''}`}>
+          {/* Subtle top glare */}
+          <div className="absolute top-0 left-0 right-0 h-64 bg-emerald-500/5 pointer-events-none" />
+          
+          <div className="relative z-10 p-6 md:p-8 lg:p-12">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
