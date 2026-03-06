@@ -204,7 +204,7 @@ export default function FinancesPage() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="max-w-6xl mx-auto space-y-6 lg:space-y-10"
+      className="max-w-6xl mx-auto space-y-6 lg:space-y-10 px-2 sm:px-4 lg:px-0 w-full overflow-hidden"
     >
       {/* Header */}
       <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -231,15 +231,15 @@ export default function FinancesPage() {
       </motion.div>
 
       {/* Planejamento Mensal - Navegador */}
-      <motion.div variants={itemVariants} className="flex items-center justify-between bg-slate-900 border border-white/5 rounded-[1.5rem] p-4 lg:p-6 shadow-2xl">
-        <button onClick={() => changeMonth(-1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors">
+      <motion.div variants={itemVariants} className="flex items-center justify-between bg-slate-900 border border-white/5 rounded-[1.5rem] p-4 sm:p-5 lg:p-6 shadow-2xl w-full">
+        <button onClick={() => changeMonth(-1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors shrink-0">
            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
         </button>
         <div className="flex flex-col items-center">
-           <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mb-1">Painel Mensal</span>
-           <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider">{monthNames[currentMonth]} {currentYear}</h2>
+           <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mb-1 text-center">Painel Mensal</span>
+           <h2 className="text-lg sm:text-xl md:text-2xl font-black text-white uppercase tracking-wider text-center flex-1 truncate">{monthNames[currentMonth]} {currentYear}</h2>
         </div>
-        <button onClick={() => changeMonth(1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors">
+        <button onClick={() => changeMonth(1)} className="p-2 md:p-3 rounded-xl bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors shrink-0">
            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
         </button>
       </motion.div>

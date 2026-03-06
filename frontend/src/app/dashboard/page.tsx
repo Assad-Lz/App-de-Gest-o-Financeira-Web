@@ -279,7 +279,7 @@ export default function DashboardHome() {
           {/* Market Top Assets */}
           <motion.div 
             whileHover={{ scale: 1.01 }}
-            className="glass-panel rounded-[2rem] p-6 lg:p-8 shrink-0 border-white/5 border-glow max-h-[400px] overflow-y-auto custom-scrollbar"
+            className="glass-panel rounded-[2rem] p-4 lg:p-8 shrink-0 border-white/5 border-glow h-auto lg:max-h-[400px] flex flex-col"
           >
              <div className="flex items-center justify-between mb-6 lg:mb-8">
                <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-widest">Market Feed</h3>
@@ -288,28 +288,31 @@ export default function DashboardHome() {
                  <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-emerald-500 opacity-80">Live</span>
                </div>
              </div>
-             <div className="space-y-3 lg:space-y-4">
-               {marketAssets.length === 0 ? (
-                 <div className="py-10 text-center text-slate-600 font-bold uppercase text-[10px] tracking-widest">Aguardando dados...</div>
-               ) : marketAssets.map((asset, i) => (
-                 <div key={i} className="flex items-center justify-between p-3 lg:p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300 border border-white/5">
-                   <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-[10px] lg:text-xs text-slate-400 border border-white/5 flex-shrink-0">
-                       {asset.symbol.substring(0, 2)}
+             
+             <div className="flex-1 overflow-y-hidden lg:overflow-y-auto overflow-x-auto lg:overflow-x-hidden custom-scrollbar pb-2 lg:pb-0">
+               <div className="flex flex-row lg:flex-col gap-3 lg:gap-4 w-max lg:w-full px-1">
+                 {marketAssets.length === 0 ? (
+                   <div className="py-10 text-center text-slate-600 font-bold uppercase text-[10px] tracking-widest">Aguardando dados...</div>
+                 ) : marketAssets.map((asset, i) => (
+                   <div key={i} className="flex flex-col lg:flex-row lg:items-center justify-between p-4 lg:p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300 border border-white/5 w-[200px] lg:w-full shrink-0">
+                     <div className="flex items-center gap-3 mb-3 lg:mb-0">
+                       <div className="w-10 h-10 lg:w-10 lg:h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-[10px] lg:text-xs text-slate-400 border border-white/5 flex-shrink-0">
+                         {asset.symbol.substring(0, 2)}
+                       </div>
+                       <div className="overflow-hidden">
+                         <p className="font-black text-white text-xs lg:text-sm tracking-tight truncate">{asset.symbol}</p>
+                         <p className="text-[9px] lg:text-[10px] text-slate-500 font-bold uppercase truncate">B3 S.A.</p>
+                       </div>
                      </div>
-                     <div className="overflow-hidden">
-                       <p className="font-black text-white text-xs lg:text-sm tracking-tight truncate">{asset.symbol}</p>
-                       <p className="text-[9px] lg:text-[10px] text-slate-500 font-bold uppercase truncate">B3 S.A.</p>
+                     <div className="text-left lg:text-right flex-shrink-0">
+                       <p className="font-black text-white text-base lg:text-sm tracking-tighter mb-1 lg:mb-0.5">R$ {asset.price.toFixed(2)}</p>
+                       <div className={`text-[10px] lg:text-[10px] font-black px-2 py-0.5 rounded-md inline-block ${asset.changePerc > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                         {asset.changePerc > 0 ? '+' : ''}{(asset.changePerc || 0).toFixed(2)}%
+                       </div>
                      </div>
                    </div>
-                   <div className="text-right flex-shrink-0 ml-2">
-                     <p className="font-black text-white text-xs lg:text-sm tracking-tighter mb-0.5">R$ {asset.price.toFixed(2)}</p>
-                     <div className={`text-[9px] lg:text-[10px] font-black px-1.5 lg:px-2 py-0.5 rounded-md inline-block ${asset.changePerc > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                       {asset.changePerc > 0 ? '+' : ''}{(asset.changePerc || 0).toFixed(2)}%
-                     </div>
-                   </div>
-                 </div>
-               ))}
+                 ))}
+               </div>
              </div>
           </motion.div>
 
