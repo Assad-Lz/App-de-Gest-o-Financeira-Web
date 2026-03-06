@@ -24,17 +24,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${inter.variable} dark`}>
-      <body className="min-h-screen bg-background font-sans antialiased selection:bg-primary selection:text-primary-foreground">
+      <body className="bg-background font-sans antialiased text-slate-200">
         <NextAuthProvider>
-          <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
-            {/* Decorative background elements in Green and Yellow */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-600/20 blur-[120px] pointer-events-none z-0" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-yellow-500/15 blur-[120px] pointer-events-none z-0" />
+          <div className="relative min-h-screen flex flex-col overflow-x-hidden">
+            {/* Background Glows */}
+            <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-600/10 blur-[120px] pointer-events-none -z-10" />
+            <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-500/5 blur-[120px] pointer-events-none -z-10" />
             
-            <div className="z-10 w-full h-full flex flex-col">
+            <div className="flex-1 flex flex-col relative z-0">
               {children}
             </div>
-          </main>
+          </div>
         </NextAuthProvider>
       </body>
     </html>
