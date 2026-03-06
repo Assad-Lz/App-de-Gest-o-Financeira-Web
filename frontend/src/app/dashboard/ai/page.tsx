@@ -335,27 +335,28 @@ export default function AIConsultantPage() {
   const quickActions = getQuickActions(lastIntent);
 
   return (
-    <div className="h-full flex flex-col max-w-5xl mx-auto -mx-6 sm:mx-auto">
+    <div className="fixed inset-0 top-16 z-[30] bg-[#020617] flex flex-col lg:static lg:z-auto lg:bg-transparent lg:h-[calc(100vh-96px)] max-w-5xl mx-auto w-full">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between px-6 sm:px-0">
+      <div className="px-5 py-3 lg:px-0 lg:py-0 lg:mb-4 flex items-center justify-between bg-slate-900/30 lg:bg-transparent border-b border-white/5 lg:border-none shrink-0 shadow-sm lg:shadow-none">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" /> FinIA Consultoria
+          <h1 className="text-lg lg:text-3xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 lg:w-7 lg:h-7 text-emerald-400" /> FinIA Consultoria
           </h1>
-          <p className="text-slate-400 mt-0.5 text-xs sm:text-sm">
-            {userName ? `Olá, ${userName}! Sua consultora IA pessoal está pronta. ✨` : 'Sua consultora financeira com IA generativa avançada.'}
+          <p className="text-slate-400 mt-0.5 text-[10px] lg:text-sm">
+            {userName ? `Olá, ${userName}! Sua consultora pronta. ✨` : 'Nossa IA financeira generativa.'}
           </p>
         </div>
-        <button onClick={handleReset} title="Nova conversa" className="p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors border border-slate-700">
-          <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+        <button onClick={handleReset} title="Nova conversa" className="p-2 lg:p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 transition-colors border border-slate-700">
+          <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5" />
         </button>
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 bg-slate-900/20 sm:glass-panel sm:rounded-2xl flex flex-col overflow-hidden sm:border sm:border-emerald-900/10 h-[calc(100dvh-180px)]">
+      <div className="flex-1 flex flex-col overflow-hidden lg:glass-panel lg:rounded-2xl lg:border lg:border-emerald-900/10 bg-transparent relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none lg:hidden" />
         
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-700/50">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-700/50 relative z-10 pb-6">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex gap-3 group ${msg.role === 'user' ? 'max-w-[80%] ml-auto flex-row-reverse' : 'max-w-[90%]'}`}>
               {/* Avatar */}
@@ -437,10 +438,10 @@ export default function AIConsultantPage() {
 
         {/* Quick Actions dinâmicos */}
         {conversationState === 'chatting' && (
-          <div className="px-4 py-2 flex gap-2 flex-wrap border-t border-slate-800/40">
+          <div className="px-4 py-3 flex gap-2 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden border-t border-white/5 bg-slate-900/50 lg:bg-transparent relative z-10">
             {quickActions.map(q => (
               <button key={q} onClick={() => setInput(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700/80 transition-colors border border-slate-700/60 truncate max-w-[200px]">
+                className="text-[10px] lg:text-xs px-4 py-2 rounded-full bg-slate-800 text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors border border-slate-700 shrink-0 font-medium shadow-sm">
                 {q}
               </button>
             ))}
@@ -448,24 +449,24 @@ export default function AIConsultantPage() {
         )}
 
         {/* Input Area */}
-        <div className="p-4 bg-slate-900/40 border-t border-slate-800/60">
+        <div className="p-3 lg:p-4 bg-[#020617] lg:bg-slate-900/40 border-t border-white/5 lg:border-slate-800/60 relative z-10 pb-[max(1rem,env(safe-area-inset-bottom))] lg:pb-4">
           <form onSubmit={handleSend} className="relative flex items-center">
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={e => setInput(e.target.value)}
-              placeholder={conversationState === 'asking_name' ? 'Digite seu nome...' : 'Pergunte sobre investimentos, gastos, planejamento...'}
-              className="w-full bg-slate-800/80 border border-slate-700 text-slate-200 pl-5 pr-14 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-500"
+              placeholder={conversationState === 'asking_name' ? 'Digite seu nome...' : 'Mensagem para a FinIA...'}
+              className="w-full bg-slate-900 lg:bg-slate-800/80 border border-white/10 lg:border-slate-700 text-slate-200 pl-4 pr-14 py-3.5 lg:py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all placeholder:text-slate-500 text-sm lg:text-base shadow-inner"
               disabled={isStreaming}
             />
             <button type="submit" disabled={!input.trim() || isTyping || isStreaming}
-              className="absolute right-2 p-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-lg shadow-emerald-600/20">
-              <Send className="w-5 h-5" />
+              className="absolute right-2 p-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-lg shadow-emerald-600/20">
+              <Send className="w-4 h-4 lg:w-5 lg:h-5 ml-0.5" />
             </button>
           </form>
-          <p className="text-center mt-2 text-[11px] text-slate-600">
-            FinIA pode cometer erros. Sempre valide decisões financeiras importantes com um profissional certificado.
+          <p className="text-center mt-2.5 text-[9px] lg:text-[11px] text-slate-500 px-4">
+            A FinIA pode apresentar informações imprecisas. Valide os dados antes de investir.
           </p>
         </div>
       </div>
