@@ -81,6 +81,65 @@ npm run dev
 
 ---
 
+## 🧪 Qualidade & Testes — 29 Testes Automatizados
+
+A aplicação possui uma cobertura rigorosa de **29 testes automatizados** validando desde regras de negócio até blindagens de segurança ativas em produção.
+
+### ✅ Backend — 16 testes (Jest + Supertest)
+
+**🔒 Segurança — `InternalGuardMiddleware` (TDD Anti-Intrusão)**
+- Permite tráfego no `/health` independente do Header (rota pública)
+- Bloqueia requisição **sem** o Header `x-api-secret-key` → `401 Unauthorized`
+- Bloqueia requisição com chave forjada/inválida → `401 Unauthorized`
+- Permite requisições com a Chave Mestra correta injetada pelo Proxy Edge → `200 OK`
+
+**💸 Transações — `CreateTransactionUseCase`**
+- Cria uma nova transação de entrada (INCOME) com sucesso
+- Converte valores negativos para absolutos via Entity
+- Rejeita transações com valor zero ou negativo
+
+**🤖 IA Financeira — `GenerateFinancialAdviceUseCase`**
+- Retorna mensagem padrão se o usuário não tem transações
+- Calcula entradas/saídas e aciona o Provider de IA com dados reais
+
+**👤 Usuários — `CreateUserUseCase`**
+- Cria um novo usuário com sucesso
+- Rejeita cadastro com e-mail duplicado
+- Rejeita formato de e-mail inválido
+- Exige senha se o provider for `email`
+- Não exige senha se o provider for OAuth (Google)
+
+**📈 Simulador — `SimulateInvestmentUseCase`**
+- Calcula juros compostos corretamente ao longo do tempo
+- Rejeita parâmetros negativos
+
+---
+
+### ✅ Frontend — 13 testes (Jest + React Testing Library)
+
+**🏠 Home Page (Login) — `page.test.tsx`**
+- Renderiza o título FinEasy na tela
+- Renderiza o campo de e-mail
+- Renderiza o botão "Acessar Plataforma"
+- Renderiza o botão de login com Google
+- Exibe a mensagem de proteção FinEasy
+
+**📊 Dashboard — `dashboard.test.tsx`**
+- Exibe o spinner de carregamento inicialmente
+- Exibe a saudação ao usuário após carregamento (dados mockados)
+- Renderiza o card de Saldo Líquido
+- Renderiza o card de Fluxo de Entrada
+- Renderiza o card de Fluxo de Saída
+- Renderiza o card de Patrimônio Investido
+- Renderiza o gráfico de Análise de Fluxo Mensal
+- Renderiza o Market Feed
+
+```
+✓ Test Suites: 7 passed — Tests: 29 passed, 0 failed
+```
+
+---
+
 ## 📄 Licença
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
