@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Search, DollarSign, BarChart2, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface MarketAsset {
   symbol: string;
