@@ -28,8 +28,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="w-72 h-full flex flex-col border-r border-slate-800/60 bg-slate-900/40 backdrop-blur-2xl z-20"
       >
         <div className="p-6 flex items-center gap-3 border-b border-slate-800/40">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-yellow-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 p-1">
-            <Image src="/logo.png" alt="FinEasy" width={32} height={32} />
+          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-emerald-500/10 p-1.5">
+            <Image src="/logo.png" alt="FinEasy" width={40} height={40} className="object-contain" />
           </div>
           <div>
             <h2 className="font-bold text-slate-200 tracking-tight leading-none text-xl">FinEasy</h2>
