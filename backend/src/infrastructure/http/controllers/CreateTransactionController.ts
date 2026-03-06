@@ -10,11 +10,11 @@ export class CreateTransactionController {
 
     try {
       const transaction = await this.createTransactionUseCase.execute({
-        userId,
+        userEmail: userId, // o front manda userId = email
         type,
         amount,
         category,
-        description,
+        description: description || undefined,
         date: date ? new Date(date) : new Date(),
       });
 

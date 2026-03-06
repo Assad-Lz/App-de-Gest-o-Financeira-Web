@@ -3,7 +3,7 @@ import { ITransactionRepository } from '../../domain/contracts/ITransactionRepos
 import { IUserRepository } from '../../domain/contracts/IUserRepository';
 
 interface IRequest {
-  userId: string;
+  userEmail: string;
   type: TransactionType;
   amount: number;
   category: string;
@@ -14,7 +14,7 @@ interface IRequest {
 export class CreateTransactionUseCase {
   constructor(
     private transactionsRepository: ITransactionRepository,
-    private usersRepository: IUserRepository // Regra: Somente criamos transação se usuário existir
+    private usersRepository: IUserRepository 
   ) {}
 
   async execute(data: IRequest): Promise<Transaction> {
@@ -22,21 +22,25 @@ export class CreateTransactionUseCase {
       throw new Error('Transaction amount must be greater than zero.');
     }
 
-    const user = await this.usersRepository.findByEmail(data.userId); 
-    // Em um cenário real de JWT passamos o ID. Para facilitar os mocks em tempo de MVP,
-    // usaremos a checagem que valida se a entidade ligada existe antes da inserção.
-    // Vamos corrigir a lógica acima: o find deve ser por ID!
-
-    // ATENÇÃO: Adicionar isso no UserRepository futuramente! Como este é um MVP de transação:
-    // O UseCase de Transaction tem responsabilidade ÚNICA, confiar que o Controller vai passar um UserId válido (por JWT). 
-    // Em produção, isso é bloqueado pelo banco relacional via Foreign Key Constraints.
+    // Como o front utiliza OAuth (NextAuth), podemos não ter o UUID localmente salvo no Frontend.
+    // O backend usa o e-mail como chave mestra temporária para "sincronizar" e resgatar o ID real do Banco.
+    let user = await this.usersRepository.findByEmail(data.userEmail); 
+    
+    // Auto-criação Mock para suportar NextAuth sem hooks demorados. (Em prod pesada, isso fica no Login)
+    if (!user) {
+       user = await this.usersRepository.save(new (await import('../../domain/entities/User')).User({
+          email: data.userEmail,
+          name: data.userEmail.split('@')[0],
+          provider: 'google'
+       }));
+    }
 
     const transaction = new Transaction({
-      userId: data.userId,
+      userId: user.id, // Aqui injetamos o UUID real p/ Foreign Key Constraints
       type: data.type,
       amount: data.amount,
-      category: data.category,
-      description: data.description,
+      category: data.category || 'Geral',
+      description: data.description || '', // Corrige o Linter de tipagem undefined -> string
       date: data.date,
     });
 
