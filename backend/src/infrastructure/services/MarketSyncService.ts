@@ -6,9 +6,9 @@ export class MarketSyncService {
   private static tickers = [
     "PETR4", "VALE3", "ITUB4", "BBDC4", "ABEV3", "MGLU3", "WEGE3", "RENT3", "HAPV3", "BBAS3", 
     "SANB11", "B3SA3", "JBSS3", "SUZB3", "ELET3", "GGBR4", "CSNA3", "VIVT3", "RAIL3", "RDOR3",
-    "RADL3", "LREN3", "PRIO3", "TIMS3", "EGIE3", "VVB11", "IVVB11", "BOVA11", "SMAL11", "KLBN11",
-    "BPAC11", "CRFB3", "NTCO3", "BRFS3", "ENGI11", "TAEE11", "EQTL3", "FLRY3", "EZTC3", "CYRE3",
-    "GOAU4", "USIM5", "CMIG4", "CPLE6", "TOTS3", "PSSA3", "ALPA4", "MRVE3", "YDUQ3", "CIEL3"
+    "RADL3", "LREN3", "PRIO3", "TIMS3", "EGIE3", "IVVB11", "BOVA11", "SMAL11", "KLBN11",
+    "BPAC11", "NTCO3", "ENGI11", "TAEE11", "EQTL3", "FLRY3", "EZTC3", "CYRE3",
+    "GOAU4", "USIM5", "CMIG4", "TOTS3", "PSSA3", "MRVE3", "YDUQ3", "EMBR3", "AZUL4", "GOLL4"
   ];
 
   constructor(private marketAssetRepository: IMarketAssetRepository) {}
