@@ -5,12 +5,12 @@ export class CreateTransactionController {
   constructor(private createTransactionUseCase: CreateTransactionUseCase) {}
 
   async handle(request: Request, response: Response): Promise<Response> {
-    const { userId, type, amount, category, description, date } = request.body;
-    // NOTA: 'userId' virá do header/middleware de autenticação (JWT) no futuro.
-
+    const { userId, userEmail, type, amount, category, description, date } = request.body;
+    // Tenta pegar de userEmail, se não vier cai para userId (compatibilidade retroativa com o front atual)
+    const emailToUse = userEmail || userId;
     try {
       const transaction = await this.createTransactionUseCase.execute({
-        userEmail: userId, // o front manda userId = email
+        userEmail: emailToUse, // enviando email do usuário identificado
         type,
         amount,
         category,

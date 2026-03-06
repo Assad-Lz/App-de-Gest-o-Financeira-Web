@@ -29,7 +29,12 @@ export class PrismaTransactionRepository implements ITransactionRepository {
 
   async findByUserId(userId: string): Promise<Transaction[]> {
     const transactions = await prisma.transaction.findMany({
-      where: { userId },
+      where: {
+        OR: [
+          { userId },
+          { user: { email: userId } }
+        ]
+      },
       orderBy: { date: 'desc' },
     });
 
