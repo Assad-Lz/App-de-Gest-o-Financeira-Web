@@ -6,7 +6,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 const API_SECRET_KEY = process.env.INTERNAL_API_SECRET_KEY || 'default-dev-secret-key';
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-async function handleProxy(req: NextRequest, { params }: { params: { path: string[] } }) {
+async function handleProxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   // 1. Barreira Tática Edge (NextAuth)
   const session = await getServerSession(authOptions);
 
@@ -14,8 +14,9 @@ async function handleProxy(req: NextRequest, { params }: { params: { path: strin
     return NextResponse.json({ error: "Unauthorized Gateway Access" }, { status: 401 });
   }
 
-  // 2. Extrai o path
-  const proxyPath = params.path.join("/");
+  // 2. Extrai o path (await necessário no Next.js 15+)
+  const resolvedParams = await params;
+  const proxyPath = resolvedParams.path.join("/");
   const backendRequestUrl = `${BACKEND_URL}/${proxyPath}`;
 
   // 3. Monta Carga Útil e Pass-Through do Método
