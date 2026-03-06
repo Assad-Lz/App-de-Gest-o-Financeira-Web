@@ -335,24 +335,24 @@ export default function AIConsultantPage() {
   const quickActions = getQuickActions(lastIntent);
 
   return (
-    <div className="h-full flex flex-col max-w-5xl mx-auto">
+    <div className="h-full flex flex-col max-w-5xl mx-auto -mx-6 sm:mx-auto">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between px-6 sm:px-0">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-            <Sparkles className="w-7 h-7 text-emerald-400" /> FinIA Consultoria
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" /> FinIA Consultoria
           </h1>
-          <p className="text-slate-400 mt-0.5 text-sm">
+          <p className="text-slate-400 mt-0.5 text-xs sm:text-sm">
             {userName ? `Olá, ${userName}! Sua consultora IA pessoal está pronta. ✨` : 'Sua consultora financeira com IA generativa avançada.'}
           </p>
         </div>
         <button onClick={handleReset} title="Nova conversa" className="p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors border border-slate-700">
-          <RefreshCw className="w-5 h-5" />
+          <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 glass-panel rounded-2xl flex flex-col overflow-hidden border border-emerald-900/10 h-[calc(100vh-200px)]">
+      <div className="flex-1 bg-slate-900/20 sm:glass-panel sm:rounded-2xl flex flex-col overflow-hidden sm:border sm:border-emerald-900/10 h-[calc(100dvh-180px)]">
         
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-700/50">

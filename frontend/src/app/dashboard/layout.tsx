@@ -127,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       onTouchEnd={handleTouchEnd}
     >
       {/* Mobile Header */}
-      <div className={`lg:hidden fixed top-0 left-0 right-0 h-16 z-[40] flex items-center justify-between px-6 transition-all duration-300 ${scrolled ? 'bg-slate-950/80 backdrop-blur-xl border-b border-white/5 shadow-2xl' : 'bg-transparent'}`}>
+      <div className={`lg:hidden fixed top-0 left-0 right-0 h-16 z-[40] flex items-center justify-between px-6 transition-all duration-300 ${scrolled ? 'bg-slate-950/90 backdrop-blur-xl border-b border-white/5 shadow-2xl' : 'bg-slate-950/70 backdrop-blur-lg border-b border-transparent'}`}>
         <div className="flex items-center gap-3">
           <Image src="/logo.png" alt="FinEasy" width={32} height={32} className="object-contain" />
           <span className="font-bold text-white tracking-tighter text-lg italic">FinEasy</span>

@@ -1,14 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Bell, Shield, Palette, ChevronRight } from 'lucide-react';
+import { User, Bell, Shield, Palette, ChevronRight, Loader2, Download } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const [isExporting, setIsExporting] = useState(false);
   const [notifications, setNotifications] = useState({
     aiTips: true,
     weeklyReport: true,
     marketAlerts: false,
   });
+
+  const handleExportData = async () => {
+    if (!session?.user) return alert('Faça login primeiro.');
+    setIsExporting(true);
+    try {
+      const email = (session.user as any).email;
+      const res = await axios.get(`${API_URL}/transactions/${email}`);
+      const dataStr = JSON.stringify(res.data, null, 2);
+      
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fin_easy_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Erro ao exportar:', err);
+      alert('Houve um erro ao baixar os dados. Tente novamente.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -36,7 +67,7 @@ export default function SettingsPage() {
             <label className="text-sm text-slate-400 mb-1.5 block">Email</label>
             <input
               type="email"
-              defaultValue="usuario@gmail.com"
+              value={session?.user?.email || "usuario@gmail.com"}
               className="w-full bg-slate-800 border border-slate-700 text-slate-400 px-4 py-2.5 rounded-xl text-sm cursor-not-allowed opacity-60"
               readOnly
             />
@@ -77,22 +108,43 @@ export default function SettingsPage() {
       <div className="glass-panel p-6 rounded-2xl space-y-3">
         <div className="flex items-center gap-3 mb-2">
           <Shield className="w-5 h-5 text-emerald-400" />
-          <h2 className="font-bold text-slate-200">Segurança</h2>
+          <h2 className="font-bold text-slate-200">Segurança e Dados</h2>
         </div>
-        {[
-          { label: 'Alterar senha', desc: 'Atualize sua senha de acesso' },
-          { label: 'Autenticação Google', desc: 'Vinculada a sua conta Google ✓' },
-          { label: 'Exportar meus dados', desc: 'Baixe um relatório completo das suas finanças' },
-          { label: 'Excluir conta', desc: 'Remova permanentemente sua conta e dados', danger: true },
-        ].map((item, i) => (
-          <div key={i} className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-colors ${item.danger ? 'hover:bg-red-500/10 border border-transparent hover:border-red-500/20' : 'bg-slate-800/40 hover:bg-slate-800/70'}`}>
+        
+        <div className="flex flex-col gap-2 relative">
+          
+          <div className="flex items-center justify-between p-4 bg-slate-800/40 hover:bg-slate-800/70 rounded-xl cursor-default transition-colors">
             <div>
-              <p className={`font-medium text-sm ${item.danger ? 'text-red-400' : 'text-slate-200'}`}>{item.label}</p>
-              <p className="text-slate-500 text-xs mt-0.5">{item.desc}</p>
+              <p className="font-medium text-sm text-slate-200">Autenticação Google</p>
+              <p className="text-slate-500 text-xs mt-0.5">Conta Google Cloud conectada ✓</p>
             </div>
-            <ChevronRight className={`w-4 h-4 ${item.danger ? 'text-red-400' : 'text-slate-500'}`} />
+            <Shield className="w-4 h-4 text-emerald-500" />
           </div>
-        ))}
+
+          <button 
+            onClick={handleExportData}
+            disabled={isExporting}
+            className="flex items-center justify-between p-4 bg-slate-800/40 hover:bg-slate-800/70 border border-transparent hover:border-white/10 rounded-xl cursor-pointer transition-colors w-full text-left disabled:opacity-50"
+          >
+            <div>
+              <p className="font-medium text-sm text-slate-200 flex items-center gap-2">
+                Exportar meus dados
+                {isExporting && <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-500" />}
+              </p>
+              <p className="text-slate-500 text-xs mt-0.5">Baixe (.json) o raio-x histórico do seu patrimônio.</p>
+            </div>
+            {isExporting ? <Loader2 className="w-4 h-4 text-slate-500 animate-spin" /> : <Download className="w-4 h-4 text-slate-400 group-hover:text-emerald-400" />}
+          </button>
+
+          <button className="flex items-center justify-between p-4 bg-slate-800/40 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl cursor-pointer transition-colors w-full text-left">
+            <div>
+              <p className="font-medium text-sm text-red-500">Excluir conta</p>
+              <p className="text-slate-500 text-xs mt-0.5">Encerrar sessão e apagar histórico da AWS.</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-red-500" />
+          </button>
+          
+        </div>
       </div>
     </div>
   );
