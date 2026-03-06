@@ -44,6 +44,12 @@ export default function FinancesPage() {
 
   useEffect(() => {
     fetchTransactions();
+
+    const fallbackTimer = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+
+    return () => clearTimeout(fallbackTimer);
   }, [session]);
 
   const handleSaveTransaction = async () => {
@@ -130,9 +136,12 @@ export default function FinancesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin mr-3" />
-        Carregando transações...
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-slate-400">
+        <div className="relative w-16 h-16 mb-6">
+          <div className="absolute inset-0 border-4 border-emerald-500/10 rounded-full" />
+          <div className="absolute inset-0 border-4 border-t-emerald-500 rounded-full animate-spin" />
+        </div>
+        <p className="text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-emerald-500 animate-pulse">Autenticando Ledger...</p>
       </div>
     );
   }

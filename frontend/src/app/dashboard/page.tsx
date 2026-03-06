@@ -35,12 +35,20 @@ export default function DashboardHome() {
         setMarketAssets(marketRes.data);
       } catch (error) {
         console.error('Erro ao carregar dados do dashboard:', error);
+        // Fallback: se der erro, exibe vazio ao invés de tela eterna de loading
       } finally {
         setLoading(false);
       }
     };
 
-    // Fetch final apenas com Axios. Sem GSAP, focando em framer-motion para não dar conflito.
+    fetchData();
+
+    // Proteção de Loading infinito (timeout de 8 segundos máximo)
+    const fallbackTimer = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+
+    return () => clearTimeout(fallbackTimer);
   }, [session]);
 
   const containerVariants: any = {
@@ -85,9 +93,12 @@ export default function DashboardHome() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[60vh] text-slate-400">
-        <Loader2 className="w-10 h-10 animate-spin mr-3" />
-        Sincronizando seu patrimônio...
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-slate-400">
+        <div className="relative w-16 h-16 mb-6">
+          <div className="absolute inset-0 border-4 border-emerald-500/10 rounded-full" />
+          <div className="absolute inset-0 border-4 border-t-emerald-500 rounded-full animate-spin" />
+        </div>
+        <p className="text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-emerald-500 animate-pulse">Sincronizando Patrimônio...</p>
       </div>
     );
   }
@@ -129,6 +140,7 @@ export default function DashboardHome() {
             whileHover={{ y: -5, scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
             key={i} 
+            data-is-up={stat.isUp}
             className="glass-panel p-6 lg:p-8 rounded-[2rem] relative overflow-hidden group border-white/5 hover:border-emerald-500/20 duration-500 border-glow flex flex-col justify-between min-h-[160px]"
           >
             <div className="flex justify-between items-start mb-4 lg:mb-6">
