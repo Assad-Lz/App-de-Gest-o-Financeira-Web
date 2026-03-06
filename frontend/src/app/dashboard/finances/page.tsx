@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter, Loader2 } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter, Loader2, X, Tag } from 'lucide-react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const PREDEFINED_CATEGORIES = ['Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Investimentos', 'Outros'];
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -204,79 +206,111 @@ export default function FinancesPage() {
         ))}
       </motion.div>
 
-      {/* Nova/Editar Transação Form */}
+      {/* Nova/Editar Transação Popup (Modal) */}
+      <AnimatePresence>
       {showForm && (
-        <motion.div 
-          initial={{ opacity: 0, height: 0, scale: 0.95 }}
-          animate={{ opacity: 1, height: 'auto', scale: 1 }}
-          exit={{ opacity: 0, height: 0 }}
-          className="glass-panel p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] border border-emerald-500/10 space-y-6 lg:space-y-8 bg-gradient-to-br from-emerald-500/5 to-transparent overflow-hidden"
-        >
-          <div className="flex items-center gap-3">
-             <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-             <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-[0.3em]">
-               {editingId ? 'Data Modification' : 'Asset Acquisition'}
-             </h3>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            <div className="space-y-2">
-              <label className="text-[9px] lg:text-[10px] text-slate-500 font-black uppercase tracking-widest pl-1">Direção</label>
-              <select
-                value={form.type}
-                onChange={e => setForm({ ...form, type: e.target.value })}
-                className="w-full bg-slate-950/80 border border-white/5 text-slate-200 px-4 py-3 lg:py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm appearance-none cursor-pointer backdrop-blur-sm"
-              >
-                <option value="EXPENSE">Saída (Débito)</option>
-                <option value="INCOME">Entrada (Crédito)</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[9px] lg:text-[10px] text-slate-500 font-black uppercase tracking-widest pl-1">Valor Monetário</label>
-              <input
-                type="number"
-                value={form.amount}
-                onChange={e => setForm({ ...form, amount: e.target.value })}
-                placeholder="0,00"
-                className="w-full bg-slate-950/80 border border-white/5 text-slate-200 px-4 py-3 lg:py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-800 backdrop-blur-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[9px] lg:text-[10px] text-slate-500 font-black uppercase tracking-widest pl-1">Taxonomia</label>
-              <input
-                type="text"
-                value={form.category}
-                onChange={e => setForm({ ...form, category: e.target.value })}
-                placeholder="Ex: Operacional, Lazer..."
-                className="w-full bg-slate-950/80 border border-white/5 text-slate-200 px-4 py-3 lg:py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-800 backdrop-blur-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[9px] lg:text-[10px] text-slate-500 font-black uppercase tracking-widest pl-1">Especificação</label>
-              <input
-                type="text"
-                value={form.description}
-                onChange={e => setForm({ ...form, description: e.target.value })}
-                placeholder="Detalhes da transação..."
-                className="w-full bg-slate-950/80 border border-white/5 text-slate-200 px-4 py-3 lg:py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-800 backdrop-blur-sm"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 pt-4 border-t border-white/5">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-6 bg-slate-950/80 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="glass-panel p-6 lg:p-8 rounded-[2rem] border border-emerald-500/20 bg-slate-900 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl flex flex-col relative"
+          >
             <button 
-              onClick={handleSaveTransaction}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 lg:px-8 py-3.5 lg:py-3.5 rounded-2xl bg-emerald-500 text-slate-950 font-black uppercase tracking-widest text-[10px] hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              onClick={resetForm} 
+              className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
             >
-              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              {editingId ? 'Push Changes' : 'Execute Order'}
+              <X className="w-5 h-5" />
             </button>
-            <button onClick={resetForm} className="w-full sm:w-auto px-6 lg:px-8 py-3.5 lg:py-3.5 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-500 font-black uppercase tracking-widest text-[10px] hover:bg-white/5 transition-colors text-center">
-              Abort
-            </button>
-          </div>
-        </motion.div>
+
+            <div className="flex items-center gap-3 mb-6 lg:mb-8">
+               <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+               <h3 className="text-sm lg:text-base font-black text-white uppercase tracking-[0.2em]">
+                 {editingId ? 'Editar Transação' : 'Nova Transação'}
+               </h3>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">Direção</label>
+                  <select
+                    value={form.type}
+                    onChange={e => setForm({ ...form, type: e.target.value })}
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm appearance-none cursor-pointer"
+                  >
+                    <option value="EXPENSE">Saída (Débito)</option>
+                    <option value="INCOME">Entrada (Crédito)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">Valor</label>
+                  <input
+                    type="number"
+                    value={form.amount}
+                    onChange={e => setForm({ ...form, amount: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-700"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pl-1 mb-1">
+                  <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                  <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Categoria</label>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {PREDEFINED_CATEGORIES.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setForm({ ...form, category: cat })}
+                      className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${form.category.toLowerCase() === cat.toLowerCase() ? 'bg-emerald-500 text-slate-950 border-emerald-500' : 'bg-slate-800/50 text-slate-400 border-white/5 hover:bg-slate-700 hover:text-slate-200'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={form.category}
+                  onChange={e => setForm({ ...form, category: e.target.value })}
+                  placeholder="Ou digite uma Categoria Personalizada..."
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-700 mt-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">Especificação / Descrição</label>
+                <input
+                  type="text"
+                  value={form.description}
+                  onChange={e => setForm({ ...form, description: e.target.value })}
+                  placeholder="Detalhes adicionais da transação..."
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold text-sm placeholder:text-slate-700"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-white/5">
+              <button type="button" onClick={resetForm} className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-800 text-slate-300 font-black uppercase tracking-widest text-[10px] hover:bg-slate-700 transition-colors text-center">
+                Cancelar
+              </button>
+              <button 
+                type="button"
+                onClick={handleSaveTransaction}
+                disabled={isSubmitting}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 text-slate-950 font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20"
+              >
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {editingId ? 'Salvar Edição' : 'Registrar'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
+      </AnimatePresence>
 
       {/* Filters and List */}
       <motion.div variants={itemVariants} className="space-y-4 lg:space-y-6">
