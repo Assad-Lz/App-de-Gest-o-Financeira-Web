@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus, ArrowUpRight, ArrowDownRight, Trash2, Filter, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -114,6 +115,19 @@ export default function FinancesPage() {
   const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
   const balance = totalIncome - totalExpense;
 
+  const containerVariants: any = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVariants: any = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-400">
@@ -124,9 +138,14 @@ export default function FinancesPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 lg:space-y-10">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="max-w-6xl mx-auto space-y-6 lg:space-y-10"
+    >
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 gs-reveal">
+      <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tighter mb-2 uppercase italic">
             Flow <span className="text-gradient">Manager</span>
@@ -147,16 +166,21 @@ export default function FinancesPage() {
             <><Plus className="w-4 h-4" /> Nova Transação</>
           )}
         </button>
-      </div>
+      </motion.div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-8 gs-reveal">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-8">
         {[
           { label: 'Saldo de Caixa', value: balance, color: balance >= 0 ? 'emerald' : 'red', icon: balance >= 0 ? ArrowUpRight : ArrowDownRight },
           { label: 'Receitas Consolidadas', value: totalIncome, color: 'emerald', icon: ArrowUpRight },
           { label: 'Despesas Consolidadas', value: totalExpense, color: 'red', icon: ArrowDownRight },
         ].map((card, i) => (
-          <div key={i} className="glass-panel p-6 lg:p-8 rounded-[2rem] border-white/5 border-glow flex flex-col justify-between min-h-[140px] lg:h-40">
+          <motion.div 
+            whileHover={{ y: -5, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            key={i} 
+            className="glass-panel p-6 lg:p-8 rounded-[2rem] border-white/5 border-glow flex flex-col justify-between min-h-[140px] lg:h-40"
+          >
             <div className="flex justify-between items-start mb-4 lg:mb-0">
               <p className="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] w-3/4 leading-tight">{card.label}</p>
               <div className={`p-2 lg:p-2.5 rounded-xl ${card.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-current/10 flex-shrink-0`}>
@@ -167,13 +191,18 @@ export default function FinancesPage() {
               <span className="text-xs lg:text-sm font-medium not-italic mr-1 text-slate-500">R$</span>
               {card.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Nova/Editar Transação Form */}
       {showForm && (
-        <div className="glass-panel p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] border border-emerald-500/10 space-y-6 lg:space-y-8 bg-gradient-to-br from-emerald-500/5 to-transparent gs-reveal">
+        <motion.div 
+          initial={{ opacity: 0, height: 0, scale: 0.95 }}
+          animate={{ opacity: 1, height: 'auto', scale: 1 }}
+          exit={{ opacity: 0, height: 0 }}
+          className="glass-panel p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] border border-emerald-500/10 space-y-6 lg:space-y-8 bg-gradient-to-br from-emerald-500/5 to-transparent overflow-hidden"
+        >
           <div className="flex items-center gap-3">
              <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
              <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-[0.3em]">
@@ -237,11 +266,11 @@ export default function FinancesPage() {
               Abort
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Filters and List */}
-      <div className="space-y-4 lg:space-y-6 gs-reveal">
+      <motion.div variants={itemVariants} className="space-y-4 lg:space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 lg:pb-0">
              <Filter className="w-4 h-4 text-slate-600 flex-shrink-0 ml-1 lg:ml-0" />
@@ -308,7 +337,7 @@ export default function FinancesPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

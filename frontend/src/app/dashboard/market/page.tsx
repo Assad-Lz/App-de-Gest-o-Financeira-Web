@@ -55,24 +55,47 @@ export default function MarketPage() {
     setSimulationResult(result);
   };
 
+  const containerVariants: any = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVariants: any = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 lg:space-y-8">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="max-w-6xl mx-auto space-y-6 lg:space-y-8"
+    >
       {/* Header */}
-      <div className="gs-reveal">
+      <motion.div variants={itemVariants}>
         <h1 className="text-3xl lg:text-5xl font-black text-white tracking-tighter mb-2 italic uppercase">
           Market <span className="text-gradient">Intelligence</span>
         </h1>
         <p className="text-slate-500 font-medium text-sm lg:text-base">Dados em tempo real da B3 e ferramentas de projeção patrimonial.</p>
-      </div>
+      </motion.div>
 
       {/* Market Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6 gs-reveal">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
         {[
           { label: 'IBOVESPA', value: '131.482', change: '+0.74%', up: true, icon: TrendingUp },
           { label: 'USD/BRL', value: 'R$ 5.18', change: '-0.21%', up: false, icon: DollarSign },
           { label: 'SELIC', value: '10.50%', change: 'a.a.', up: true, icon: BarChart2 },
         ].map((ind, i) => (
-          <div key={i} className="glass-panel p-5 lg:p-6 rounded-[2rem] border-white/5 border-glow group flex items-center justify-between">
+          <motion.div 
+            whileHover={{ y: -5, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            key={i} 
+            className="glass-panel p-5 lg:p-6 rounded-[2rem] border-white/5 border-glow group flex items-center justify-between"
+          >
             <div>
               <p className="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] mb-1 lg:mb-2">{ind.label}</p>
               <p className="text-2xl lg:text-3xl font-black text-white tracking-tighter">{ind.value}</p>
@@ -83,14 +106,14 @@ export default function MarketPage() {
             <div className={`p-3 lg:p-4 rounded-xl lg:rounded-2xl ${ind.up ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-current/10 shadow-inner flex-shrink-0`}>
               <ind.icon className="w-5 h-5 lg:w-6 lg:h-6" />
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
         {/* Assets Table */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="relative group gs-reveal">
+        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
+          <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
             <input
               type="text"
@@ -101,7 +124,10 @@ export default function MarketPage() {
             />
           </div>
 
-          <div className="glass-panel rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden border-white/5 border-glow gs-reveal">
+          <motion.div 
+            whileHover={{ scale: 1.005 }}
+            className="glass-panel rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden border-white/5 border-glow"
+          >
             <div className="flex justify-between items-center px-4 md:px-8 py-4 md:py-5 border-b border-white/5 bg-white/[0.01]">
               <div className="grid grid-cols-3 md:grid-cols-5 gap-4 flex-1 text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                 <span className="col-span-2">Ativo Financeiro</span>
@@ -182,11 +208,11 @@ export default function MarketPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Simulator */}
-        <div className="space-y-6 flex flex-col gs-reveal">
+        <motion.div variants={itemVariants} className="space-y-6 flex flex-col">
           <div className="glass-panel p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] border border-white/5 border-glow bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent h-fit overflow-hidden relative">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
               <BarChart2 className="w-24 h-24 lg:w-32 lg:h-32 text-emerald-500" />
@@ -267,8 +293,8 @@ export default function MarketPage() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

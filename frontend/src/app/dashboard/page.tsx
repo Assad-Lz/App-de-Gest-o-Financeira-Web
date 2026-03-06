@@ -5,6 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowDownRight, Sparkles, TrendingUp, PieChart as PieIcon, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -39,18 +40,24 @@ export default function DashboardHome() {
       }
     };
 
-    fetchData();
-
-    import('gsap').then(({ gsap }) => {
-      if (contentRef.current) {
-        gsap.fromTo(
-          contentRef.current.children,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power2.out' }
-        );
-      }
-    });
+    // Fetch final apenas com Axios. Sem GSAP, focando em framer-motion para não dar conflito.
   }, [session]);
+
+  const containerVariants: any = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      }
+    }
+  };
+
+  const itemVariants: any = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
 
   const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
   const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
@@ -86,10 +93,15 @@ export default function DashboardHome() {
   }
 
   return (
-    <div ref={contentRef} className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="max-w-7xl mx-auto space-y-6 lg:space-y-8"
+    >
       
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 gs-reveal">
+      <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl lg:text-5xl font-black text-white tracking-tighter mb-2">
             Olá, <span className="text-gradient drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">{session?.user?.name?.split(' ')[0] || 'Investidor'}</span>!
@@ -104,16 +116,21 @@ export default function DashboardHome() {
             Relatório IA
           </Link>
         </div>
-      </div>
+      </motion.div>
 
       {/* Top Cards Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-8 gs-reveal">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-8">
         {[
           { title: "Saldo Líquido", value: balance, color: balance >= 0 ? 'emerald' : 'red', isUp: balance >= 0, icon: TrendingUp },
           { title: "Fluxo de Entrada", value: totalIncome, color: 'emerald', isUp: true, icon: ArrowUpRight },
           { title: "Fluxo de Saída", value: totalExpense, color: 'red', isUp: false, icon: ArrowDownRight },
         ].map((stat, i) => (
-          <div key={i} className="glass-panel p-6 lg:p-8 rounded-[2rem] relative overflow-hidden group border-white/5 hover:border-emerald-500/20 transition-all duration-500 border-glow flex flex-col justify-between min-h-[160px]">
+          <motion.div 
+            whileHover={{ y: -5, scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            key={i} 
+            className="glass-panel p-6 lg:p-8 rounded-[2rem] relative overflow-hidden group border-white/5 hover:border-emerald-500/20 duration-500 border-glow flex flex-col justify-between min-h-[160px]"
+          >
             <div className="flex justify-between items-start mb-4 lg:mb-6">
               <p className="text-slate-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.1em]">{stat.title}</p>
               <div className={`p-2 lg:p-2.5 rounded-xl ${stat.isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-current/10`}>
@@ -130,15 +147,19 @@ export default function DashboardHome() {
               <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${stat.isUp ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
               <span className="truncate">{stat.isUp ? 'Saúde Financeira OK' : 'Alerta de Gastos'}</span>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Main Chart Flow & Pie Chart Area */}
-        <div className="lg:col-span-2 space-y-6 flex flex-col gs-reveal">
-          <div className="glass-panel rounded-[2rem] p-5 lg:p-8 flex flex-col border-white/5 border-glow">
+        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6 flex flex-col">
+          <motion.div 
+            whileHover={{ scale: 1.005 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="glass-panel rounded-[2rem] p-5 lg:p-8 flex flex-col border-white/5 border-glow"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
               <h3 className="text-lg lg:text-xl font-black text-white tracking-widest uppercase text-xs">Análise de Fluxo Mensal</h3>
               <div className="flex items-center gap-3 lg:gap-4 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest text-slate-500">
@@ -171,9 +192,12 @@ export default function DashboardHome() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="glass-panel rounded-[2rem] p-5 lg:p-8 border-white/5 border-glow">
+          <motion.div 
+            whileHover={{ scale: 1.01 }}
+            className="glass-panel rounded-[2rem] p-5 lg:p-8 border-white/5 border-glow"
+          >
              <div className="flex items-center gap-3 mb-6">
                <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500">
                  <PieIcon className="w-5 h-5" />
@@ -207,14 +231,17 @@ export default function DashboardHome() {
                   </ResponsiveContainer>
                  )}
              </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Small Widgets column */}
-        <div className="space-y-6 flex flex-col gs-reveal">
+        <motion.div variants={itemVariants} className="space-y-6 flex flex-col">
           
           {/* AI Advice Widget */}
-          <div className="glass-panel rounded-[2rem] p-6 lg:p-8 bg-gradient-to-br from-emerald-500/10 via-slate-950/40 to-slate-950/60 border-emerald-500/10 relative overflow-hidden flex-1 group cursor-pointer hover:border-emerald-500/30 transition-all duration-500 min-h-[250px] lg:min-h-0">
+          <motion.div 
+            whileHover={{ scale: 1.02, y: -5 }}
+            className="glass-panel rounded-[2rem] p-6 lg:p-8 bg-gradient-to-br from-emerald-500/10 via-slate-950/40 to-slate-950/60 border-emerald-500/10 relative overflow-hidden flex-1 group cursor-pointer hover:border-emerald-500/30 transition-all duration-500 min-h-[250px] lg:min-h-0"
+          >
             <div className="absolute -top-12 -right-12 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <Sparkles className="w-40 h-40 lg:w-48 lg:h-48 text-emerald-400 rotate-12" />
             </div>
@@ -235,10 +262,13 @@ export default function DashboardHome() {
                 <TrendingUp className="w-4 h-4 text-emerald-500" />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Market Top Assets */}
-          <div className="glass-panel rounded-[2rem] p-6 lg:p-8 flex-1 border-white/5 border-glow">
+          <motion.div 
+            whileHover={{ scale: 1.01 }}
+            className="glass-panel rounded-[2rem] p-6 lg:p-8 flex-1 border-white/5 border-glow"
+          >
              <div className="flex items-center justify-between mb-6 lg:mb-8">
                <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-widest">Market Feed</h3>
                <div className="flex items-center gap-2">
@@ -269,11 +299,11 @@ export default function DashboardHome() {
                  </div>
                ))}
              </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       </div>
 
-    </div>
+    </motion.div>
   );
 }
