@@ -12,7 +12,8 @@ const COLORS = ['#10b981', '#eab308', '#3b82f6', '#f43f5e', '#a855f7', '#ec4899'
 const EXPENSE_CATEGORIES = ['Custos Fixos', 'Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Outros'];
 const INCOME_CATEGORIES = ['Salário', 'Dividendos', 'Rendimentos', 'Vendas', 'Freelance', 'Restituição', 'Bônus', 'Outros'];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Todas as chamadas passam pelo Proxy Next.js que injeta a x-api-secret-key
+const API_URL = '/api/proxy';
 
 type Transaction = {
   id: string;

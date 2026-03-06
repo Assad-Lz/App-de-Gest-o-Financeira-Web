@@ -27,7 +27,7 @@ export default function MarketPage() {
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/market/assets/top`);
+      const resp = await fetch(`/api/proxy/market/assets/top`);
       const data = await resp.json();
       if (Array.isArray(data)) {
         setAssets(data);
