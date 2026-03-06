@@ -209,28 +209,28 @@ export default function FinancesPage() {
       {/* Nova/Editar Transação Popup (Modal) */}
       <AnimatePresence>
       {showForm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-6 bg-slate-950/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 lg:p-6 bg-slate-950/80 backdrop-blur-sm overflow-hidden">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="glass-panel p-6 lg:p-8 rounded-[2rem] border border-emerald-500/20 bg-slate-900 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl flex flex-col relative"
+            className="glass-panel p-5 sm:p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] border border-emerald-500/20 bg-slate-900 w-full max-w-2xl max-h-[85vh] lg:max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl flex flex-col relative mt-8 lg:mt-0"
           >
             <button 
               onClick={resetForm} 
-              className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors z-10"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
-            <div className="flex items-center gap-3 mb-6 lg:mb-8">
-               <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-               <h3 className="text-sm lg:text-base font-black text-white uppercase tracking-[0.2em]">
+            <div className="flex items-center gap-3 mb-6 pr-8">
+               <div className="w-1.5 h-6 bg-emerald-500 rounded-full shrink-0" />
+               <h3 className="text-sm lg:text-base font-black text-white uppercase tracking-[0.2em] break-words">
                  {editingId ? 'Editar Transação' : 'Nova Transação'}
                </h3>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-5 lg:space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">Direção</label>
