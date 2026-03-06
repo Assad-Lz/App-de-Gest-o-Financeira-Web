@@ -6,7 +6,8 @@ import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const PREDEFINED_CATEGORIES = ['Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Investimentos', 'Outros'];
+const EXPENSE_CATEGORIES = ['Custos Fixos', 'Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Outros'];
+const INCOME_CATEGORIES = ['Salário', 'Dividendos', 'Rendimentos', 'Vendas', 'Freelance', 'Restituição', 'Bônus', 'Outros'];
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -261,7 +262,7 @@ export default function FinancesPage() {
                   <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Categoria</label>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {PREDEFINED_CATEGORIES.map(cat => (
+                  {(form.type === 'INCOME' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(cat => (
                     <button
                       key={cat}
                       type="button"
