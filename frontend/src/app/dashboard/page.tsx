@@ -86,49 +86,49 @@ export default function DashboardHome() {
   }
 
   return (
-    <div ref={contentRef} className="max-w-7xl mx-auto space-y-8">
+    <div ref={contentRef} className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 gs-reveal">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 gs-reveal">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter mb-2">
+          <h1 className="text-3xl lg:text-5xl font-black text-white tracking-tighter mb-2">
             Olá, <span className="text-gradient drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">{session?.user?.name?.split(' ')[0] || 'Investidor'}</span>!
           </h1>
-          <p className="text-slate-500 font-medium">Aqui está o resumo estratégico do seu patrimônio atualizado.</p>
+          <p className="text-slate-500 font-medium text-sm lg:text-base">Aqui está o resumo estratégico do seu patrimônio atualizado.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/finances" className="px-6 py-3 rounded-2xl bg-slate-900/50 text-slate-300 font-semibold hover:bg-slate-800 transition-all border border-white/5 hover:border-white/10 backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row items-center gap-3 lg:gap-4 w-full lg:w-auto">
+          <Link href="/dashboard/finances" className="w-full sm:w-auto text-center px-6 py-3.5 lg:py-3 rounded-[1.25rem] bg-slate-900/50 text-slate-300 font-semibold hover:bg-slate-800 transition-all border border-white/5 hover:border-white/10 backdrop-blur-md">
             Gerenciar Finanças
           </Link>
-          <button className="px-6 py-3 rounded-2xl bg-emerald-500 text-slate-950 font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-emerald-500/20">
+          <Link href="/dashboard/ai" className="w-full sm:w-auto text-center px-6 py-3.5 lg:py-3 rounded-[1.25rem] bg-emerald-500 text-slate-950 font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-emerald-500/20">
             Relatório IA
-          </button>
+          </Link>
         </div>
       </div>
 
       {/* Top Cards Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 gs-reveal">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-8 gs-reveal">
         {[
           { title: "Saldo Líquido", value: balance, color: balance >= 0 ? 'emerald' : 'red', isUp: balance >= 0, icon: TrendingUp },
           { title: "Fluxo de Entrada", value: totalIncome, color: 'emerald', isUp: true, icon: ArrowUpRight },
           { title: "Fluxo de Saída", value: totalExpense, color: 'red', isUp: false, icon: ArrowDownRight },
         ].map((stat, i) => (
-          <div key={i} className="glass-panel p-8 rounded-[2rem] relative overflow-hidden group border-white/5 hover:border-emerald-500/20 transition-all duration-500 border-glow">
-            <div className="flex justify-between items-start mb-6">
-              <p className="text-slate-500 text-xs font-black uppercase tracking-[0.1em]">{stat.title}</p>
-              <div className={`p-2.5 rounded-xl ${stat.isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-current/10`}>
-                <stat.icon className="w-5 h-5" />
+          <div key={i} className="glass-panel p-6 lg:p-8 rounded-[2rem] relative overflow-hidden group border-white/5 hover:border-emerald-500/20 transition-all duration-500 border-glow flex flex-col justify-between min-h-[160px]">
+            <div className="flex justify-between items-start mb-4 lg:mb-6">
+              <p className="text-slate-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.1em]">{stat.title}</p>
+              <div className={`p-2 lg:p-2.5 rounded-xl ${stat.isUp ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'} border border-current/10`}>
+                <stat.icon className="w-4 h-4 lg:w-5 lg:h-5" />
               </div>
             </div>
             
-            <h3 className={`text-4xl font-black text-white tracking-tighter mb-4 flex items-baseline gap-1`}>
-              <span className="text-xl font-medium text-slate-500">R$</span>
+            <h3 className={`text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-tighter mb-2 lg:mb-4 flex items-baseline gap-1 truncate`}>
+              <span className="text-lg lg:text-xl font-medium text-slate-500 mr-1">R$</span>
               {stat.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
 
-            <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${stat.isUp ? 'text-emerald-500/80' : 'text-red-500/80'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${stat.isUp ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
-              {stat.isUp ? 'Saúde Financeira OK' : 'Alerta de Gastos'}
+            <div className={`flex items-center gap-2 text-[9px] lg:text-[10px] font-black uppercase tracking-widest ${stat.isUp ? 'text-emerald-500/80' : 'text-red-500/80'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${stat.isUp ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+              <span className="truncate">{stat.isUp ? 'Saúde Financeira OK' : 'Alerta de Gastos'}</span>
             </div>
           </div>
         ))}
@@ -137,16 +137,16 @@ export default function DashboardHome() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Main Chart Flow & Pie Chart Area */}
-        <div className="lg:col-span-2 space-y-8 flex flex-col gs-reveal">
-          <div className="glass-panel rounded-[2rem] p-8 flex flex-col border-white/5 border-glow">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-white tracking-widest uppercase text-xs">Análise de Fluxo Mensal</h3>
-              <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+        <div className="lg:col-span-2 space-y-6 flex flex-col gs-reveal">
+          <div className="glass-panel rounded-[2rem] p-5 lg:p-8 flex flex-col border-white/5 border-glow">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
+              <h3 className="text-lg lg:text-xl font-black text-white tracking-widest uppercase text-xs">Análise de Fluxo Mensal</h3>
+              <div className="flex items-center gap-3 lg:gap-4 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest text-slate-500">
                 <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Entradas</div>
                 <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /> Saídas</div>
               </div>
             </div>
-            <div className="h-72 w-full">
+            <div className="h-60 lg:h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={cashflowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
@@ -173,14 +173,14 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          <div className="glass-panel rounded-[2rem] p-8 border-white/5 border-glow">
+          <div className="glass-panel rounded-[2rem] p-5 lg:p-8 border-white/5 border-glow">
              <div className="flex items-center gap-3 mb-6">
                <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500">
                  <PieIcon className="w-5 h-5" />
                </div>
-               <h3 className="text-sm font-black text-white uppercase tracking-widest">Alocação de Gastos</h3>
+               <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-widest">Alocação de Gastos</h3>
              </div>
-             <div className="h-56 w-full flex items-center justify-center">
+             <div className="h-48 lg:h-56 w-full flex items-center justify-center">
                  {pieData.length === 0 ? (
                    <div className="text-center">
                      <p className="text-slate-600 text-sm font-semibold mb-1">Dados não coletados</p>
@@ -211,58 +211,58 @@ export default function DashboardHome() {
         </div>
 
         {/* Small Widgets column */}
-        <div className="space-y-8 flex flex-col gs-reveal">
+        <div className="space-y-6 flex flex-col gs-reveal">
           
           {/* AI Advice Widget */}
-          <div className="glass-panel rounded-[2rem] p-8 bg-gradient-to-br from-emerald-500/10 via-slate-950/40 to-slate-950/60 border-emerald-500/10 relative overflow-hidden flex-1 group cursor-pointer hover:border-emerald-500/30 transition-all duration-500">
+          <div className="glass-panel rounded-[2rem] p-6 lg:p-8 bg-gradient-to-br from-emerald-500/10 via-slate-950/40 to-slate-950/60 border-emerald-500/10 relative overflow-hidden flex-1 group cursor-pointer hover:border-emerald-500/30 transition-all duration-500 min-h-[250px] lg:min-h-0">
             <div className="absolute -top-12 -right-12 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Sparkles className="w-48 h-48 text-emerald-400 rotate-12" />
+              <Sparkles className="w-40 h-40 lg:w-48 lg:h-48 text-emerald-400 rotate-12" />
             </div>
             <div className="relative z-10 flex flex-col h-full">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-emerald-500/20 w-fit">
-                <Sparkles className="w-3 h-3" /> IA Expert
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] mb-4 lg:mb-6 border border-emerald-500/20 w-fit">
+                <Sparkles className="w-2.5 h-2.5 lg:w-3 lg:h-3" /> IA Expert
               </div>
-              <h3 className="text-2xl font-black text-white tracking-tighter mb-4 group-hover:text-emerald-400 transition-colors">Insights do Dia</h3>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed flex-1">
+              <h3 className="text-xl lg:text-2xl font-black text-white tracking-tighter mb-3 lg:mb-4 group-hover:text-emerald-400 transition-colors">Insights do Dia</h3>
+              <p className="text-slate-400 text-xs lg:text-sm font-medium leading-relaxed flex-1">
                 {balance < 0 
                   ? "Detectamos um déficit no seu fluxo. Sugerimos revisar as categorias de lazer e focar em reduzir custos fixos para recuperar seu equilíbrio."
                   : balance === 0 
                     ? "Inicie o registro de dados para que nossa IA possa processar seu perfil financeiro e gerar metas personalizadas." 
                     : "Fluxo saudável detectado. Seu lucro marginal atual permite uma alocação de 15% em ativos de renda variável."}
               </p>
-              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Clique para ver mais</span>
+              <div className="mt-6 lg:mt-8 pt-4 lg:pt-6 border-t border-white/5 flex items-center justify-between">
+                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-500">Clique para ver mais</span>
                 <TrendingUp className="w-4 h-4 text-emerald-500" />
               </div>
             </div>
           </div>
 
           {/* Market Top Assets */}
-          <div className="glass-panel rounded-[2rem] p-8 flex-1 border-white/5 border-glow">
-             <div className="flex items-center justify-between mb-8">
-               <h3 className="text-sm font-black text-white uppercase tracking-widest">Market Feed</h3>
+          <div className="glass-panel rounded-[2rem] p-6 lg:p-8 flex-1 border-white/5 border-glow">
+             <div className="flex items-center justify-between mb-6 lg:mb-8">
+               <h3 className="text-xs lg:text-sm font-black text-white uppercase tracking-widest">Market Feed</h3>
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 opacity-80">Live</span>
+                 <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-emerald-500 animate-pulse" />
+                 <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-emerald-500 opacity-80">Live</span>
                </div>
              </div>
-             <div className="space-y-4">
+             <div className="space-y-3 lg:space-y-4">
                {marketAssets.length === 0 ? (
                  <div className="py-10 text-center text-slate-600 font-bold uppercase text-[10px] tracking-widest">Aguardando dados...</div>
                ) : marketAssets.map((asset, i) => (
-                 <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300 border border-white/5">
+                 <div key={i} className="flex items-center justify-between p-3 lg:p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300 border border-white/5">
                    <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-xs text-slate-400 border border-white/5">
+                     <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-slate-900 flex items-center justify-center font-black text-[10px] lg:text-xs text-slate-400 border border-white/5 flex-shrink-0">
                        {asset.symbol.substring(0, 2)}
                      </div>
-                     <div>
-                       <p className="font-black text-white text-sm tracking-tight">{asset.symbol}</p>
-                       <p className="text-[10px] text-slate-500 font-bold uppercase">B3 S.A.</p>
+                     <div className="overflow-hidden">
+                       <p className="font-black text-white text-xs lg:text-sm tracking-tight truncate">{asset.symbol}</p>
+                       <p className="text-[9px] lg:text-[10px] text-slate-500 font-bold uppercase truncate">B3 S.A.</p>
                      </div>
                    </div>
-                   <div className="text-right">
-                     <p className="font-black text-white text-sm tracking-tighter mb-0.5">R$ {asset.price.toFixed(2)}</p>
-                     <div className={`text-[10px] font-black px-2 py-0.5 rounded-md inline-block ${asset.changePerc > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                   <div className="text-right flex-shrink-0 ml-2">
+                     <p className="font-black text-white text-xs lg:text-sm tracking-tighter mb-0.5">R$ {asset.price.toFixed(2)}</p>
+                     <div className={`text-[9px] lg:text-[10px] font-black px-1.5 lg:px-2 py-0.5 rounded-md inline-block ${asset.changePerc > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                        {asset.changePerc > 0 ? '+' : ''}{(asset.changePerc || 0).toFixed(2)}%
                      </div>
                    </div>
