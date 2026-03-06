@@ -16,24 +16,28 @@ O **FinEasy** é uma plataforma premium de gestão financeira pessoal que une o 
 
 - **📊 Monitor de Mercado Live**: Sincronização automática de preços via Brapi e AwesomeAPI.
 - **🤖 Consultoria AI (FinIA)**: Inteligência artificial baseada no Google Gemini para analisar seus investimentos e tirar dúvidas financeiras.
-- **💸 Gestão de Transações**: Controle total de entradas e saídas com categorias e analytics.
-- **📉 Simulador de Investimentos**: Projete seus ganhos futuros com base em ativos reais.
+- **📈 Inteligência de Capital**: Módulo ativo de investimentos para alocar em Renda Fixa ou Variável com dedução inteligente de fluxo de caixa.
+- **💸 Gestão de Transações**: Controle total de entradas e saídas com categorias, Datepickers retroativos e analytics automáticos.
+- **🗂️ Relatórios PDF Premium**: Exportação profissional do seu histórico de transações com logomarca e tabela zebrada.
+- **🛡️ Segurança Cibernética (WAF)**: Sistema blindado com Next.js Edge Proxy API (Ocultando o Backend). Bloqueios anti-XSS (Helmet, HPP), e validação de tráfego com `x-api-secret-key` provado por TDD Jest rigoroso.
 - **🔐 Login Social**: Integração segura com Google Auth para acesso rápido.
-- **💎 Design Premium**: Interface em Dark Mode com Glassmorphism e micro-animações.
+- **💎 Design Premium**: Interface Mobile-First, Dark Mode Glassmorphism com animações físicas Framer Motion.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### **Frontend**
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 14 (App Router & API Edge Proxy Inverso)
 - **Estilização**: Tailwind CSS & Lucide React
 - **Auth**: NextAuth.js (Google Provider)
-- **Charts**: Recharts
+- **Segurança**: Content-Security-Policy (CSP) Restrita e HSTS.
+- **Charts**: Recharts & jsPDF
 
 ### **Backend**
 - **Linguagem**: TypeScript / Node.js
 - **API**: Express
+- **Segurança/WAF**: Helmet, HPP, XSS-Clean, Jest (TDD Anti-Intrusão)
 - **ORM**: Prisma
 - **Agendamento**: Node-cron (ETL Nativo)
 

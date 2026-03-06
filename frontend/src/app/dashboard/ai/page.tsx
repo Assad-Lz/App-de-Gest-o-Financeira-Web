@@ -25,7 +25,7 @@ type Message = {
   isTyping?: boolean;
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const BACKEND_URL = '/api/proxy';
 const STORAGE_KEY = 'fineasy_chat_history';
 const STORAGE_NAME_KEY = 'fineasy_user_name';
 

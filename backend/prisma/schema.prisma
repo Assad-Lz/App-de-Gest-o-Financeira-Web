@@ -18,6 +18,7 @@ model User {
   updatedAt    DateTime      @updatedAt
 
   transactions Transaction[]
+  investments  Investment[]
 }
 
 model Transaction {
@@ -29,6 +30,17 @@ model Transaction {
   category    String   // "Salário", "Alimentação", "Transporte", etc
   description String?
   date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Investment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // "RESERVA", "ACAO", "CDB", "FII"
+  amount      Float
+  assetSymbol String?  // Ex: "PETR4", "Tesouro Selic"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

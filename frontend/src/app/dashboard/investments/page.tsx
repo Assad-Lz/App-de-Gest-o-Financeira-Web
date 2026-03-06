@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { TrendingUp, Calculator, DollarSign, Landmark, BarChart3, Info } from 'lucide-react';
+import { TrendingUp, Calculator, DollarSign, Landmark, BarChart3, Info, Plus, X, Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type ProductType = 'CDB' | 'TESOURO_SELIC' | 'TESOURO_IPCA' | 'TESOURO_PRE' | 'LCI_LCA' | 'POUPANCA';
 
@@ -87,10 +90,16 @@ function calcularRendimento(
 const formatBRL = (val: number) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function InvestmentsPage() {
+  const { data: session } = useSession();
   const [selected, setSelected] = useState<ProductType>('CDB');
   const [valor, setValor] = useState('10000');
   const [meses, setMeses] = useState('12');
   const [taxa, setTaxa] = useState('110'); // % do CDI ou taxa fixa
+
+  // Estados modal Nova Alocação
+  const [showAllocate, setShowAllocate] = useState(false);
+  const [isAllocating, setIsAllocating] = useState(false);
+  const [allocateForm, setAllocateForm] = useState({ type: 'ACAO', amount: '', assetSymbol: '' });
 
   const product = PRODUCTS.find(p => p.id === selected)!;
   const valorNum = parseFloat(valor.replace(',', '.')) || 0;
@@ -112,14 +121,44 @@ export default function InvestmentsPage() {
   const taxaLabel = selected === 'CDB' || selected === 'LCI_LCA' ? '% do CDI' :
                    selected === 'TESOURO_IPCA' ? 'Taxa adicional (% a.a.)' : 'Taxa (% a.a.)';
 
+  const handleAllocate = async () => {
+    if (!session?.user || !allocateForm.amount) return;
+    setIsAllocating(true);
+    try {
+      const email = (session.user as any).email;
+      const API_URL = '/api/proxy';
+      await axios.post(`${API_URL}/investments`, {
+        userEmail: email,
+        type: allocateForm.type,
+        amount: parseFloat(allocateForm.amount),
+        assetSymbol: allocateForm.type === 'ACAO' || allocateForm.type === 'FII' ? allocateForm.assetSymbol : allocateForm.type
+      });
+      alert('Reserva alocada com sucesso! O valor foi deduzido do Saldo de Caixa.');
+      setShowAllocate(false);
+      setAllocateForm({ type: 'ACAO', amount: '', assetSymbol: '' });
+    } catch (err) {
+      alert('Erro ao alocar capital.');
+    } finally {
+      setIsAllocating(false);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight mb-1 flex items-center gap-3">
-          <Landmark className="w-8 h-8 text-yellow-400" /> Simulador de Investimentos
-        </h1>
-        <p className="text-slate-400">Compare CDB, Tesouro Direto, LCI/LCA e Poupança lado a lado, já com desconto de IR.</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight mb-1 flex items-center gap-3">
+            <Landmark className="w-8 h-8 text-yellow-400" /> Inteligência de Capital
+          </h1>
+          <p className="text-slate-400">Dimensione e aloque reservas diretamente no seu portfólio inteligente.</p>
+        </div>
+        <button 
+          onClick={() => setShowAllocate(true)}
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-slate-950 font-black uppercase tracking-widest text-xs hover:scale-[1.03] active:scale-95 transition-transform shadow-xl shadow-emerald-500/20"
+        >
+          <Plus className="w-4 h-4" /> Alocar Patrimônio
+        </button>
       </div>
 
       {/* Indicadores de Referência */}
@@ -278,6 +317,83 @@ export default function InvestmentsPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal Alocar Patrimonio */}
+      <AnimatePresence>
+        {showAllocate && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="glass-panel p-6 lg:p-8 rounded-[2rem] border border-emerald-500/20 bg-slate-900 w-full max-w-md shadow-2xl relative"
+            >
+              <button onClick={() => setShowAllocate(false)} className="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                  <Landmark className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white uppercase tracking-wider">Nova Alocação</h3>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Transferência de Caixa → Ativo</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 block">Classe do Ativo</label>
+                  <select
+                    value={allocateForm.type}
+                    onChange={e => setAllocateForm({ ...allocateForm, type: e.target.value })}
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold"
+                  >
+                    <option value="RESERVA">Reserva Fixa (CDB/Tesouro)</option>
+                    <option value="ACAO">Ação (B3)</option>
+                    <option value="FII">Fundo Imobiliário</option>
+                  </select>
+                </div>
+
+                {(allocateForm.type === 'ACAO' || allocateForm.type === 'FII') && (
+                  <div>
+                    <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 block">Ticker (Símbolo)</label>
+                    <input
+                      type="text"
+                      value={allocateForm.assetSymbol}
+                      onChange={e => setAllocateForm({ ...allocateForm, assetSymbol: e.target.value.toUpperCase() })}
+                      placeholder="Ex: PETR4"
+                      maxLength={6}
+                      className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold uppercase"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 block">Capital Alocado (R$)</label>
+                  <input
+                    type="number"
+                    value={allocateForm.amount}
+                    onChange={e => setAllocateForm({ ...allocateForm, amount: e.target.value })}
+                    placeholder="2500.00"
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-semibold"
+                  />
+                  <p className="text-[9px] text-emerald-500 mt-2 font-bold italic">* Esse valor será deduzido do seu Saldo de Caixa atual automaticamente.</p>
+                </div>
+
+                <button 
+                  onClick={handleAllocate}
+                  disabled={isAllocating || !allocateForm.amount}
+                  className="w-full mt-4 py-4 rounded-xl bg-emerald-500 text-slate-950 font-black uppercase tracking-widest text-xs hover:scale-[1.02] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isAllocating && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Confirmar Aporte
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

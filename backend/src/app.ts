@@ -4,7 +4,13 @@ import { userRoutes } from './infrastructure/http/routes/userRoutes';
 import { transactionRoutes } from './infrastructure/http/routes/transactionRoutes';
 import { aiRoutes } from './infrastructure/http/routes/aiRoutes';
 import { marketRoutes } from './infrastructure/http/routes/marketRoutes';
+import { investmentRoutes } from './infrastructure/http/routes/investmentRoutes';
 import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
+import hpp from 'hpp';
+// @ts-ignore
+import xss from 'xss-clean';
+import { internalGuard } from './infrastructure/http/middlewares/InternalGuardMiddleware';
 
 const app = express();
 
@@ -19,9 +25,17 @@ const limiter = rateLimit({
   message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' }
 });
 
+// WAF corporativo (Security Headers & Anti-Injection)
+app.use(helmet()); 
+app.use(xss()); 
+app.use(hpp()); 
+
 app.use(limiter);
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // Body parser blindado contra payloads gigantes
 app.use(cors());
+
+// Middleware Supremo de Proxy-Edge: Só aceita se o request vir do servidor Next.js na Nuvem
+app.use(internalGuard);
 
 // Registro das rotas
 app.get('/health', (req, res) => {
@@ -36,5 +50,6 @@ app.use('/users', userRoutes);
 app.use('/transactions', transactionRoutes);
 app.use('/ai', aiRoutes);
 app.use('/market', marketRoutes);
+app.use('/investments', investmentRoutes);
 
 export { app };

@@ -13,11 +13,16 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        // Envia requisição para registar ou criar usuário no Backend PostgreSQL (via Express Node.js)
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/users`, { 
+        // Envia requisição para registar ou criar usuário no Backend PostgreSQL com a Chave Mestra Injetada
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET_KEY || 'default-dev-secret-key';
+
+        await axios.post(`${BACKEND_URL}/users`, { 
           name: user.name, 
           email: user.email, 
           provider: 'google' 
+        }, {
+          headers: { 'x-api-secret-key': INTERNAL_SECRET }
         });
         return true;
       } catch (error: any) {

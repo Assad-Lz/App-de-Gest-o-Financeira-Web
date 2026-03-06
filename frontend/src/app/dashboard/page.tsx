@@ -6,12 +6,12 @@ import {
   PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ArrowDownRight, Sparkles, TrendingUp, PieChart as PieIcon, Loader2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Sparkles, TrendingUp, PieChart as PieIcon, Loader2, Landmark } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = '/api/proxy';
 
 const COLORS = ['#10b981', '#eab308', '#3b82f6', '#f43f5e'];
 
@@ -19,6 +19,7 @@ export default function DashboardHome() {
   const { data: session } = useSession();
   const contentRef = useRef<HTMLDivElement>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [investments, setInvestments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [marketAssets, setMarketAssets] = useState<any[]>([]);
 
@@ -27,12 +28,14 @@ export default function DashboardHome() {
       if (!session?.user) return;
       try {
         const userId = (session.user as any).email;
-        const [txRes, marketRes] = await Promise.all([
+        const [txRes, marketRes, invRes] = await Promise.all([
           axios.get(`${API_URL}/transactions/${userId}`),
-          axios.get(`${API_URL}/market/assets/top?limit=3`)
+          axios.get(`${API_URL}/market/assets/top?limit=3`),
+          axios.get(`${API_URL}/investments/${userId}`)
         ]);
         setTransactions(txRes.data);
         setMarketAssets(marketRes.data);
+        setInvestments(invRes.data);
       } catch (error) {
         console.error('Erro ao carregar dados do dashboard:', error);
         // Fallback: se der erro, exibe vazio ao invés de tela eterna de loading
@@ -70,6 +73,7 @@ export default function DashboardHome() {
   const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((a, t) => a + t.amount, 0);
   const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((a, t) => a + t.amount, 0);
   const balance = totalIncome - totalExpense;
+  const totalInvested = investments.reduce((a, inv) => a + inv.amount, 0);
 
   // Gerar dados para o gráfico de pizza baseado em categorias reais
   const categoryTotals = transactions
@@ -130,18 +134,19 @@ export default function DashboardHome() {
       </motion.div>
 
       {/* Top Cards Stats */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-8">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {[
           { title: "Saldo Líquido", value: balance, color: balance >= 0 ? 'emerald' : 'red', isUp: balance >= 0, icon: TrendingUp },
           { title: "Fluxo de Entrada", value: totalIncome, color: 'emerald', isUp: true, icon: ArrowUpRight },
           { title: "Fluxo de Saída", value: totalExpense, color: 'red', isUp: false, icon: ArrowDownRight },
+          { title: "Patrimônio Investido", value: totalInvested, color: 'emerald', isUp: true, icon: Landmark, highlight: true },
         ].map((stat, i) => (
           <motion.div 
             whileHover={{ y: -5, scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
             key={i} 
             data-is-up={stat.isUp}
-            className="glass-panel p-6 lg:p-8 rounded-[2rem] relative overflow-hidden group border-white/5 hover:border-emerald-500/20 duration-500 border-glow flex flex-col justify-between min-h-[160px]"
+            className={`glass-panel p-5 lg:p-6 rounded-[2rem] relative overflow-hidden group duration-500 border-glow flex flex-col justify-between min-h-[160px] ${stat.highlight ? 'border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)] bg-emerald-950/20' : 'border-white/5 hover:border-emerald-500/20'}`}
           >
             <div className="flex justify-between items-start mb-4 lg:mb-6">
               <p className="text-slate-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.1em]">{stat.title}</p>
@@ -150,14 +155,14 @@ export default function DashboardHome() {
               </div>
             </div>
             
-            <h3 className={`text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-tighter mb-2 lg:mb-4 flex items-baseline gap-1 truncate`}>
-              <span className="text-lg lg:text-xl font-medium text-slate-500 mr-1">R$</span>
+            <h3 className={`text-2xl lg:text-3xl xl:text-4xl font-black text-white tracking-tighter mb-2 lg:mb-4 flex items-baseline gap-1 truncate ${stat.highlight ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : ''}`}>
+              <span className={`text-sm lg:text-base font-medium mr-1 ${stat.highlight ? 'text-emerald-500' : 'text-slate-500'}`}>R$</span>
               {stat.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
 
-            <div className={`flex items-center gap-2 text-[9px] lg:text-[10px] font-black uppercase tracking-widest ${stat.isUp ? 'text-emerald-500/80' : 'text-red-500/80'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${stat.isUp ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
-              <span className="truncate">{stat.isUp ? 'Saúde Financeira OK' : 'Alerta de Gastos'}</span>
+            <div className={`flex items-center gap-2 text-[9px] lg:text-[10px] font-black uppercase tracking-widest ${stat.highlight ? 'text-emerald-400' : stat.isUp ? 'text-emerald-500/80' : 'text-red-500/80'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${stat.highlight ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : stat.isUp ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+              <span className="truncate">{stat.highlight ? 'Ativos Protegidos' : stat.isUp ? 'Saúde Financeira OK' : 'Alerta de Gastos'}</span>
             </div>
           </motion.div>
         ))}
